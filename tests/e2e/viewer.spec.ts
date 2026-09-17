@@ -202,6 +202,19 @@ for (const width of [390, 768, 1440]) {
   });
 }
 
+test('long unbreakable tokens (revision hash, IDs) wrap instead of widening a 390px page', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.route('**/replays/S1.replay.json', async (route) => {
+    const doc = JSON.parse(readFileSync('web/public/replays/S1.replay.json', 'utf8'));
+    doc.implementationRevision = `${'a1b2c3d4e5'.repeat(8)}+uncommitted-changes`;
+    doc.provenance.generator = 'x'.repeat(120);
+    await route.fulfill({ json: doc });
+  });
+  await open(page, '#S1');
+  await expect(page.getByTestId('source')).toContainText('+uncommitted-changes');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+});
+
 test('S3 unknown state screenshot for the walkthrough', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await open(page, '#S3');

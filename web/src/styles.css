@@ -52,6 +52,8 @@
   box-sizing: border-box;
 }
 body {
+  /* Hashes and IDs are long unbreakable tokens; never let one widen the page. */
+  overflow-wrap: anywhere;
   margin: 0;
   background: var(--bg);
   color: var(--ink);
@@ -197,6 +199,7 @@ button.link {
 }
 
 .banner {
+  overflow-wrap: anywhere;
   border: 1px solid var(--line);
   border-left-width: 5px;
   background: var(--surface);

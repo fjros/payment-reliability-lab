@@ -38,7 +38,12 @@ export function implementationRevision(): string {
   }
 }
 
-export function buildReplay(result: ScenarioResult, seed: string, generatedAt: Date): ReplayDocument {
+export function buildReplay(
+  result: ScenarioResult,
+  seed: string,
+  generatedAt: Date,
+  revision: string = implementationRevision(),
+): ReplayDocument {
   return {
     format: REPLAY_FORMAT,
     version: REPLAY_VERSION,
@@ -50,7 +55,7 @@ export function buildReplay(result: ScenarioResult, seed: string, generatedAt: D
     generatedAt: generatedAt.toISOString(),
     scenarioClock:
       'Deterministic manual clock starting 2026-01-01T00:00:00.000Z; timestamps order events but are not wall-clock measurements.',
-    implementationRevision: implementationRevision(),
+    implementationRevision: revision,
     provenance: {
       kind: 'recorded-deterministic-scenario-run',
       synthetic: true,

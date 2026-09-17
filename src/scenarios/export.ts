@@ -1,7 +1,7 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseScenarioArgs, runLocalScenarios } from './local-lab.ts';
-import { buildReplay, type ReplayDocument } from './replay.ts';
+import { buildReplay, implementationRevision, type ReplayDocument } from './replay.ts';
 
 /**
  * Writes versioned replay JSON from an actual scenario run.
@@ -16,9 +16,11 @@ try {
   await mkdir(outDir, { recursive: true });
   const results = await runLocalScenarios(args.ids, args.seed);
   const generatedAt = new Date();
+  // Read once, before writing anything: the export's own output must not make the tree look dirty.
+  const revision = implementationRevision();
   for (const result of results) {
     const file = path.join(outDir, `${result.scenarioId}.replay.json`);
-    await writeFile(file, `${JSON.stringify(buildReplay(result, args.seed, generatedAt), null, 2)}\n`);
+    await writeFile(file, `${JSON.stringify(buildReplay(result, args.seed, generatedAt, revision), null, 2)}\n`);
     process.stdout.write(`wrote ${path.relative(process.cwd(), file)} (${result.trace.length} trace events)\n`);
   }
   // The static viewer discovers replays through this index; it lists every replay in the folder.
