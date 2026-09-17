@@ -106,3 +106,17 @@ live-agent trials across models; an illustrative "naive design" comparison in th
 ## Continuing this log
 
 For each milestone record: actual files/features added, decisions that changed, commands executed with results, known limitations and the next step. Never replace a failure with “verified” unless rerun evidence exists. For an architecture change, explain which invariant remains protected and how the tests demonstrate it.
+
+
+### Application showcase — 17 September 2026
+
+Added a separate public build mode and manual GitHub Pages workflow. It includes only the
+static viewer, synthetic replay fixtures and reviewed media. The Live API tab is absent in
+this build, including for stale `#live` bookmarks. Backend, database and raw agent sessions
+remain local. This keeps the public demo usable without allocating a server or exposing
+mutation endpoints. Existing local development and API investigation remain available.
+
+Added public-browser checks for scenario navigation, unknown outcome, reserved funds, source
+links, refresh and responsive layout. The accompanying captioned video shows S1–S3 and reviewed
+output from an actual Claude Code investigation; it never presents recorded output as a live
+agent invocation. Media provenance and reproduction notes are in `WALKTHROUGH.md`.

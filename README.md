@@ -11,10 +11,25 @@ educational project: not a production payment system, and not an implementation 
 employer's systems.
 
 **Status (17 September 2026): milestones 1–6 of [the plan](docs/IMPLEMENTATION_PLAN.md) are
-implemented and verified locally and in CI.** The code is published in this repository; nothing is deployed.
+implemented and verified locally and in CI.** The source is public, with an interactive replay on GitHub Pages. The API and database remain local.
 Exact commands and results are in [docs/VERIFICATION.md](docs/VERIFICATION.md); decisions and the
 progress log are in [docs/DECISIONS.md](docs/DECISIONS.md); what is *not* covered is under
 [Limitations](#limitations).
+
+## Explore without setup
+
+[Interactive replay](https://fjros.github.io/payment-reliability-lab/) ·
+[Captioned walkthrough](https://fjros.github.io/payment-reliability-lab/media/walkthrough-v1.mp4) ·
+[Transcript and recorded Claude investigation](https://fjros.github.io/payment-reliability-lab/media/transcript.html)
+
+The public viewer lets you scrub through reviewed scenario traces, inspect journal entries and
+follow causal links. These are exported runs, not fresh backend execution. The walkthrough also
+includes genuine output from a separate Claude Code session using the three read-only MCP tools.
+See [walkthrough provenance](docs/WALKTHROUGH.md).
+
+`npm run build:public` builds the replay-only site; `npm run test:public` checks it in Chromium.
+The manual **Publish interactive replay** workflow publishes only `dist/web` to GitHub Pages.
+The regular local viewer retains its Live API tab.
 
 ## What it demonstrates
 
@@ -149,7 +164,8 @@ See [docs/DEMO.md](docs/DEMO.md#five-minute-walkthrough-as-implemented).
   account-scoped exception listing.
 - The viewer has no "naive design" comparison, and its live mode observes one transfer at a time.
 - The live agent evaluation is five single runs with one model; see its file for caveats.
-- CI has run once (green, on the initial commit); it is a single data point. No deployment exists by design.
+- The public website replays exported test evidence; it cannot create transfers or run an agent.
+  The backend and provider simulator run locally.
 
 ## Design documents
 

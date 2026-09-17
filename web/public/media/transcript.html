@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Walkthrough transcript</title
+  ><style>
+    body {
+      max-width: 820px;
+      margin: 50px auto;
+      padding: 0 24px;
+      background: #101720;
+      color: #e8eff6;
+      font: 18px/1.7 system-ui;
+    }
+    h1 {
+      line-height: 1.1;
+    }
+    li {
+      margin: 18px 0;
+    }
+    time {
+      color: #b7ef76;
+    }
+    a {
+      color: #9bdeff;
+    }
+  </style>
+  <h1>Payment Reliability Lab — walkthrough transcript</h1>
+  <p>
+    A 76-second screen recording of the interactive replay, followed by reviewed output from an actual Claude Code investigation. All funds
+    and providers are synthetic. The scenario replay is not live backend execution; the Claude output was recorded in a separate read-only
+    session.
+  </p>
+  <ol>
+    <li><time>00:00</time> Three failures. One question: what can the evidence prove?</li>
+    <li><time>00:04</time> 01 / The response is lost. The client retries with the same idempotency key.</li>
+    <li><time>00:13</time> Several requests can still represent a single business operation.</li>
+    <li><time>00:16</time> The recorded result: one transfer, one reservation, one settlement.</li>
+    <li><time>00:21</time> 02 / Duplicate and older webhooks arrive. They must not repeat the financial effect.</li>
+    <li><time>00:29</time> The journal preserves one settlement. Duplicate notifications remain inspectable.</li>
+    <li><time>00:34</time> 03 / The provider accepted the request, but the application has no usable response.</li>
+    <li><time>00:39</time> Unknown is not rejected. Funds stay reserved; a timeout does not release them.</li>
+    <li><time>00:45</time> A later authoritative observation resolves the transfer with one settlement.</li>
+    <li><time>00:49</time> Actual Claude Code output, recorded separately while the outcome was still unknown.</li>
+    <li><time>00:54</time> Claude called three read-only MCP tools: trace, invariants and exceptions.</li>
+    <li><time>00:59</time> Its report separates the local reservation from the unknown external outcome.</li>
+    <li><time>01:05</time> 15 evidence IDs cited. All were present in tool output. No mutating tool calls.</li>
+    <li><time>01:10</time> Explore the replay, inspect the code, or reproduce the scenarios locally.</li>
+  </ol>
+  <p>
+    <a href="agent-investigation.html">Full recorded Claude Code output and provenance</a> · <a href="../">Interactive replay</a> ·
+    <a href="https://github.com/fjros/payment-reliability-lab">Source code</a>
+  </p>
+</html>

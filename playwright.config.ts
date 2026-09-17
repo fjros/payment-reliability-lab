@@ -6,6 +6,7 @@ import { defineConfig } from '@playwright/test';
  */
 export default defineConfig({
   testDir: 'tests/e2e',
+  testMatch: process.env.PRL_PUBLIC_REPLAY === 'true' ? 'public.spec.ts' : 'viewer.spec.ts',
   fullyParallel: true,
   reporter: [['list']],
   outputDir: 'test-results',

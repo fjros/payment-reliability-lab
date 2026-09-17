@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>
+    Recorded Claude Code investigation</title
+  ><style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #0a1018;
+      color: #f0f3f8;
+      font-family: Arial, sans-serif;
+    }
+    main {
+      max-width: 1330px;
+      margin: auto;
+      padding: 50px 55px;
+    }
+    .kicker {
+      font-size: 14px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #c9f57a;
+    }
+    h1 {
+      font-size: 52px;
+      letter-spacing: -2px;
+      margin: 14px 0 18px;
+    }
+    p {
+      line-height: 1.55;
+      color: #b7c4d4;
+    }
+    .tools {
+      display: flex;
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .tool {
+      border: 1px solid #314357;
+      border-radius: 8px;
+      padding: 16px;
+      color: #8de3db;
+      font-family: monospace;
+      font-size: 16px;
+      flex: 1;
+    }
+    .quote {
+      background: #111d2c;
+      border-left: 3px solid #c9f57a;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 15px 0;
+      font-size: 17px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+    .quote strong {
+      color: #d3f986;
+    }
+    small {
+      color: #9bafc5;
+    }
+    .metrics {
+      color: #8de3db;
+      font-size: 16px;
+    }
+    a {
+      color: #b7ef76;
+    }
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    details {
+      margin-top: 30px;
+    }
+    footer {
+      border-top: 1px solid #344053;
+      margin-top: 30px;
+      padding-top: 20px;
+    }
+    @media (max-width: 650px) {
+      main {
+        padding: 24px;
+      }
+      h1 {
+        font-size: 32px;
+      }
+      .tools {
+        flex-direction: column;
+      }
+    }
+  </style>
+  <main>
+    <div class="kicker">Actual Claude Code investigation · recorded 17 September 2026</div>
+    <h1>Know what you can prove.</h1>
+    <p>
+      Recorded output from a real session using the demo’s read-only MCP server.<br />Scenario S3: the provider response is lost and the
+      lookup is unavailable.
+    </p>
+    <div class="tools">
+      <div class="tool">get_transfer_trace</div>
+      <div class="tool">check_invariants</div>
+      <div class="tool">list_exceptions</div>
+    </div>
+    <div class="quote">
+      <strong>Effects.</strong> There is one journal batch, the reserve batch jb_8006951b9684cc9f5dff. It posts -1250 to
+      user:S3-1-A:available and +1250 to user:S3-1-A:reserved (ev_3ad06d08ef5351352d1d). There is no settle batch and no release batch.
+    </div>
+    <div class="quote">
+      <strong>The external outcome is unknown.</strong> The submit response was lost (att_80e169d53923760d3966), so the provider may or may
+      not have processed the request. The only lookup returned 503 (att_760bc9f7ff43c51df877), which is not evidence of rejection. No
+      provider observation or webhook is recorded, so neither success nor failure can be asserted.
+    </div>
+    <div class="quote">
+      <strong>External effects cannot be counted.</strong> How many effects exist inside the provider under pref_f8b39489b392672ba52a cannot
+      be determined from application evidence. This is the unknown part of I6.
+    </div>
+    <p class="metrics">15 evidence IDs cited · 0 ungrounded IDs · 0 non-MCP actions</p>
+    <small>Verbatim excerpts; the complete recorded answer is below. This is a recorded investigation, not a live agent connection.</small>
+    <details>
+      <summary>Full recorded answer and provenance</summary>
+      <pre>
+### Known facts
+- **Identity and economics.** Transfer `tr_d7b48831d3ef89f23198` belongs to run `S3-1` and account `S3-1-A`. Its `amountMinor` is `&quot;1250&quot;` in asset `DEMO_USD`, and its destination is `demo:merchant-1`. The request was accepted under idempotency key `K-s3` (`ev_848db73d0fd72a264975`).
+- **Provider reference.** One reference, `pref_f8b39489b392672ba52a`, is used by both provider calls (`att_80e169d53923760d3966`, `att_760bc9f7ff43c51df877`).
+- **Local state.** The state is `outcome_unknown` at version 3, and `lastProviderObservation` is `null`. The recorded transitions are reserved to submitting (`ev_f45fcb5e206d11c6f6dc`), then submitting to outcome_unknown (`ev_e3b3854e3dbfebdf8381`).
+- **Requests.** There is one `request_accepted` (`ev_848db73d0fd72a264975`). There are no replayed requests and no idempotency conflicts.
+- **Notifications.** None are recorded. The webhook list and the provider observation list are both empty.
+- **Effects.** There is one journal batch, the reserve batch `jb_8006951b9684cc9f5dff`. It posts `-1250` to `user:S3-1-A:available` and `+1250` to `user:S3-1-A:reserved` (`ev_3ad06d08ef5351352d1d`). There is no settle batch and no release batch.
+- **Attempt 1, submit.** `att_80e169d53923760d3966` ran under lease token 1 (`ev_73285b2f5859a32f6644`). Its response was lost, with detail &quot;fetch failed: other side closed&quot; and no HTTP status (`ev_4dead397b05a5526b735`). The worker recorded `outcome_unknown` with the reservation kept and release not permitted (`ev_3ed61940c405d98dd920`).
+- **Attempt 2, lookup.** `att_760bc9f7ff43c51df877` was a lookup and not a resubmission. Worker-2 ran it under lease token 2 (`ev_99c1e1e5ad2cc93ff94c`, `ev_502446840a382cb7c04c`). It failed with HTTP 503 and the meaning &quot;No usable provider evidence was obtained&quot; (`ev_37f0b4a009633014670d`).
+- **No double payment locally.** There is one submission, one reservation and no terminal effect.
+- **Open exception.** Run `S3-1` lists one item, `unknown_outcome:tr_d7b48831d3ef89f23198`, with reason `provider_outcome_unresolved`. It cites `ev_3ed61940c405d98dd920`. The run has no conflicting-observation items and no invariant-failure items.
+- **Snapshots.** The three tool calls were observed at slightly different times, and all report database snapshot `1670:1670:`. They do not disagree.
+
+### Unknown or conflicting facts
+- **The external outcome is unknown.** The submit response was lost (`att_80e169d53923760d3966`), so the provider may or may not have processed the request. The only lookup returned 503 (`att_760bc9f7ff43c51df877`), which is not evidence of rejection. No provider observation or webhook is recorded, so neither success nor failure can be asserted.
+- **External effects cannot be counted.** How many effects exist inside the provider under `pref_f8b39489b392672ba52a` cannot be determined from application evidence. This is the unknown part of I6.
+- **No contradictory observations are recorded.**
+
+### Invariant results
+The trace used was complete. It has 12 events, seq 1 to 12, with `reachedEnd` true, `traceComplete` true and linked evidence not truncated.
+- I1: pass
+- I2: pass
+- I3: pass. One reservation, no settlement and no release (`jb_8006951b9684cc9f5dff`).
+- I4: pass
+- I5: pass
+- I6: **unknown**. The local part passes because both calls used the single reference `pref_f8b39489b392672ba52a` (`att_80e169d53923760d3966`, `att_760bc9f7ff43c51df877`). The external part is unknown because the application cannot count effects inside the provider.
+- I7: pass. Two inconclusive provider calls are recorded, funds remain reserved and nothing was released (`att_80e169d53923760d3966`, `att_760bc9f7ff43c51df877`, `ev_3ed61940c405d98dd920`).
+- I8: pass
+
+### Next diagnostic step
+- Wait for or perform an authoritative provider lookup under the same reference `pref_f8b39489b392672ba52a`. The only lookup so far returned 503 and produced no evidence.
+- Then re-run the trace and invariant checks to see whether a provider observation or webhook has been recorded. Until then the reservation should stay in place and the outcome should be treated as unknown.</pre>
+      <p>Claude Code 2.1.274 · claude-fable-5-1</p>
+      <a href="agent-investigation.json">Reviewed machine-readable record</a>
+    </details>
+    <footer>
+      <a href="../#S3">Explore the scenario</a> · <a href="https://github.com/fjros/payment-reliability-lab">Inspect the code</a>
+    </footer>
+  </main>
+</html>

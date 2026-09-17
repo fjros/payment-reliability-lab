@@ -80,3 +80,19 @@ with `success` (https://github.com/fjros/payment-reliability-lab/actions/runs/35
 database-server failure, disk-full or network-partition tests. Only Chromium was used for browser
 tests. Accessibility was checked through roles, labels, focus and keyboard tests, not with an
 automated audit tool or a screen reader.
+
+
+## Public showcase verification — 17 September 2026
+
+After adding the public build and replay-only navigation:
+
+- `npm run typecheck` and `npm run lint`: passed.
+- `npm run test:all`: 64 unit, 61 PostgreSQL integration, 12 MCP and 17 browser tests passed.
+- `npm run test:public`: four browser tests passed (no live API tab or API requests, stale
+  bookmark fallback, S3 unknown state and reserved funds, refresh, links, 390/768/1440 px).
+- A real Claude Code investigation at S3's unknown checkpoint used all three MCP tools,
+  cited 15 distinct evidence IDs present in their output, and did not use mutating tools.
+  Only its reviewed answer and tool-call inputs are published; raw events stay private.
+
+See `WALKTHROUGH.md` for the media provenance. The public site is an interactive replay of
+exported runs; these checks do not claim a deployed backend or live public model execution.

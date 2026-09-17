@@ -721,3 +721,17 @@ footer {
     scroll-behavior: auto !important;
   }
 }
+
+.public-links {
+  max-width: 480px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.public-links nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.public-links a {
+  color: var(--accent);
+}

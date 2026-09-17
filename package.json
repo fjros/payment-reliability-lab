@@ -55,6 +55,8 @@
     "build:web": "vite build --config web/vite.config.ts",
     "build": "npm run build:server && npm run build:web",
     "mcp": "node dist/mcp/main.js",
-    "openapi": "node src/api/openapi.ts"
+    "openapi": "node src/api/openapi.ts",
+    "build:public": "vite build --config web/vite.config.ts --mode public",
+    "test:public": "npm run build:public && PRL_PUBLIC_REPLAY=true playwright test"
   }
 }

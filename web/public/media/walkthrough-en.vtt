@@ -1,0 +1,57 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:04.654
+Three failures. One question: what can the evidence prove?
+
+2
+00:00:04.654 --> 00:00:13.813
+01 / The response is lost. The client retries with the same idempotency key.
+
+3
+00:00:13.813 --> 00:00:16.860
+Several requests can still represent a single business operation.
+
+4
+00:00:16.860 --> 00:00:21.414
+The recorded result: one transfer, one reservation, one settlement.
+
+5
+00:00:21.414 --> 00:00:29.458
+02 / Duplicate and older webhooks arrive. They must not repeat the financial effect.
+
+6
+00:00:29.458 --> 00:00:34.516
+The journal preserves one settlement. Duplicate notifications remain inspectable.
+
+7
+00:00:34.516 --> 00:00:39.532
+03 / The provider accepted the request, but the application has no usable response.
+
+8
+00:00:39.532 --> 00:00:45.090
+Unknown is not rejected. Funds stay reserved; a timeout does not release them.
+
+9
+00:00:45.090 --> 00:00:49.110
+A later authoritative observation resolves the transfer with one settlement.
+
+10
+00:00:49.110 --> 00:00:54.615
+Actual Claude Code output, recorded separately while the outcome was still unknown.
+
+11
+00:00:54.615 --> 00:00:59.647
+Claude called three read-only MCP tools: trace, invariants and exceptions.
+
+12
+00:00:59.647 --> 00:01:05.659
+Its report separates the local reservation from the unknown external outcome.
+
+13
+00:01:05.659 --> 00:01:10.174
+15 evidence IDs cited. All were present in tool output. No mutating tool calls.
+
+14
+00:01:10.174 --> 00:01:16.000
+Explore the replay, inspect the code, or reproduce the scenarios locally.

@@ -18,6 +18,9 @@ import {
   type TraceEvent,
 } from './model.ts';
 
+declare const __PUBLIC_REPLAY__: boolean;
+const liveEnabled = !__PUBLIC_REPLAY__;
+
 interface State {
   index: ReplayIndexEntry[];
   tab: string; // replay file name, or 'live'
@@ -83,7 +86,7 @@ async function openTab(tab: string): Promise<void> {
   state.tab = tab;
   state.selected = null;
   state.error = null;
-  if (tab === 'live') {
+  if (tab === 'live' && liveEnabled) {
     state.loaded = null;
     history.replaceState(null, '', '#live');
     render();
@@ -143,12 +146,35 @@ function header(): HTMLElement {
         'Trace viewer for synthetic transfers. It explains the system; the evidence is the tests and the recorded traces.',
       ),
     ),
-    h('span', { class: 'badge synthetic' }, 'All data synthetic · DEMO_USD is not money'),
+    h(
+      'div',
+      { class: 'public-links' },
+      h('span', { class: 'badge synthetic' }, 'All data synthetic · DEMO_USD is not money'),
+      __PUBLIC_REPLAY__ && h('p', {}, 'Interactive replay of recorded test runs · No backend or account required'),
+      __PUBLIC_REPLAY__ &&
+        h(
+          'nav',
+          { 'aria-label': 'Project resources' },
+          h('a', { href: 'https://github.com/fjros/payment-reliability-lab', target: '_blank', rel: 'noreferrer' }, 'Source code ↗'),
+          h(
+            'a',
+            {
+              href: 'https://github.com/fjros/payment-reliability-lab#guarantees-and-what-they-rest-on',
+              target: '_blank',
+              rel: 'noreferrer',
+            },
+            'Engineering decisions ↗',
+          ),
+        ),
+    ),
   );
 }
 
 function tabs(): HTMLElement {
-  const entries = [...state.index.map((e) => ({ key: e.file, label: `${e.id} · ${e.title}` })), { key: 'live', label: 'Live API' }];
+  const entries = [
+    ...state.index.map((e) => ({ key: e.file, label: `${e.id} · ${e.title}` })),
+    ...(liveEnabled ? [{ key: 'live', label: 'Live API' }] : []),
+  ];
   const list = h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Scenarios' });
   entries.forEach((entry, i) => {
     const selected = entry.key === state.tab;
@@ -880,5 +906,6 @@ try {
 }
 const wanted = location.hash.replace('#', '');
 const first = state.index.find((e) => e.id === wanted) ?? state.index[0];
-if (wanted === 'live' || !first) await openTab('live');
-else await openTab(first.file);
+if (liveEnabled && (wanted === 'live' || !first)) await openTab('live');
+else if (first) await openTab(first.file);
+else render();
