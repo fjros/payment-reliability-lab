@@ -11,7 +11,7 @@ educational project: not a production payment system, and not an implementation 
 employer's systems.
 
 **Status (17 September 2026): milestones 1–6 of [the plan](docs/IMPLEMENTATION_PLAN.md) are
-implemented and verified locally.** Nothing has been committed, pushed, published or deployed.
+implemented and verified locally and in CI.** The code is published in this repository; nothing is deployed.
 Exact commands and results are in [docs/VERIFICATION.md](docs/VERIFICATION.md); decisions and the
 progress log are in [docs/DECISIONS.md](docs/DECISIONS.md); what is *not* covered is under
 [Limitations](#limitations).
@@ -149,7 +149,7 @@ See [docs/DEMO.md](docs/DEMO.md#five-minute-walkthrough-as-implemented).
   account-scoped exception listing.
 - The viewer has no "naive design" comparison, and its live mode observes one transfer at a time.
 - The live agent evaluation is five single runs with one model; see its file for caveats.
-- CI is defined but has never run (nothing has been pushed). No deployment exists by design.
+- CI has run once (green, on the initial commit); it is a single data point. No deployment exists by design.
 
 ## Design documents
 

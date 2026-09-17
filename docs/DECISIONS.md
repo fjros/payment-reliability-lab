@@ -90,9 +90,14 @@ Evidence: `tests/e2e/viewer.spec.ts`; screenshots inspected.
 README rewritten to match the implementation; CI workflow with SHA-pinned actions (verified with
 `git ls-remote`), read-only permissions, no deployment; decisions, assumptions, mapping and
 verification documented; files reviewed for secrets and private content (only synthetic demo
-defaults exist). **Everything is left uncommitted and unstaged.** Remaining for the owner:
-review, commit, push; CI has never run; regenerate replays after the first commit if a real
-revision hash is wanted in them.
+defaults exist). At the end of the implementation session everything was left uncommitted for owner review.
+
+### After owner review — 17 September 2026
+The owner asked for the initial commit (`304b25b`, author Fran Ros) and pushed it to
+`fjros/payment-reliability-lab`; the first CI run completed with `success`. The repository uses a
+repo-local `core.sshCommand` to select the owner's GitHub key. Still open: the public replays say
+`implementationRevision: "unavailable"` because they predate the first commit; regenerate them
+with `npm run demo:export -- all --out=web/public/replays` if a real hash is wanted.
 
 Known limitations are listed in the README. Next useful steps, none started: capped backoff and
 a dead-letter policy for long-pending transfers; surfacing uncorrelated webhooks; repeated

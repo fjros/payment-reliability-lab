@@ -74,7 +74,9 @@ state rather than a red failure, broken-connector marker on the lost response.
 
 ## Not verified
 
-CI has never executed (no push). No load, soak, fuzz or long-running tests. No independent
+CI: the first and so far only run, on the initial commit `304b25b` (17 September 2026), completed
+with `success` (https://github.com/fjros/payment-reliability-lab/actions/runs/35204135449): typecheck, lint, unit, integration
+(Testcontainers on the GitHub runner), MCP, build and Playwright. No load, soak, fuzz or long-running tests. No independent
 database-server failure, disk-full or network-partition tests. Only Chromium was used for browser
 tests. Accessibility was checked through roles, labels, focus and keyboard tests, not with an
 automated audit tool or a screen reader.

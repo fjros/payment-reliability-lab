@@ -4,7 +4,7 @@
 
 Build Payment Reliability Lab: a small, inspectable TypeScript/PostgreSQL demo of safe retries, duplicate/out-of-order webhooks, uncertain provider outcomes and evidence-based investigation via MCP. Everything is synthetic.
 
-Milestones 1–6 are implemented and locally verified (see `docs/DECISIONS.md` and `docs/VERIFICATION.md` for what exists and what was actually run). Do not describe anything beyond that record as implemented or verified. No commits exist yet; the owner decides when to commit and publish.
+Milestones 1–6 are implemented and locally verified (see `docs/DECISIONS.md` and `docs/VERIFICATION.md` for what exists and what was actually run). Do not describe anything beyond that record as implemented or verified. The owner decides when to commit and push; do neither unless explicitly asked.
 
 ## Read before implementation
 
