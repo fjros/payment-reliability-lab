@@ -1,0 +1,27 @@
+[
+  {
+    "id": "S1",
+    "title": "Response lost, client retries",
+    "file": "S1.replay.json"
+  },
+  {
+    "id": "S2",
+    "title": "Duplicate and out-of-order notifications",
+    "file": "S2.replay.json"
+  },
+  {
+    "id": "S3",
+    "title": "Provider accepted, response disappeared",
+    "file": "S3.replay.json"
+  },
+  {
+    "id": "S7",
+    "title": "Untrusted text inside provider evidence",
+    "file": "S7.replay.json"
+  },
+  {
+    "id": "S8",
+    "title": "Contradictory terminal evidence",
+    "file": "S8.replay.json"
+  }
+]

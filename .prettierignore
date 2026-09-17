@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+package-lock.json
+artifacts
+web/public/replays
+playwright-report
+test-results
+*.md

@@ -1,0 +1,820 @@
+{
+  "format": "payment-reliability-lab/replay",
+  "version": 1,
+  "scenario": {
+    "id": "S1",
+    "title": "Response lost, client retries",
+    "question": "Did the retry create another payment?",
+    "summary": "The API commits the transfer, the response is lost on the wire, and the client retries with the same idempotency key."
+  },
+  "seed": "1",
+  "runId": "S1-1",
+  "accountId": "S1-1-A",
+  "transferId": "tr_1fd0df1c8ff761e0cf35",
+  "generatedAt": "2026-09-17T07:43:27.723Z",
+  "scenarioClock": "Deterministic manual clock starting 2026-01-01T00:00:00.000Z; timestamps order events but are not wall-clock measurements.",
+  "implementationRevision": "unavailable",
+  "provenance": {
+    "kind": "recorded-deterministic-scenario-run",
+    "synthetic": true,
+    "generator": "npm run demo:export -- S1",
+    "note": "Recorded from a real local run (real PostgreSQL, real HTTP between API, worker and provider simulator). All accounts, funds and providers are synthetic. This is a static replay, not live MCP or agent execution."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "actor": "client",
+      "text": "POST /v1/transfers with key \"K-s1\": the connection dies. The client cannot tell whether the transfer exists.",
+      "afterSeq": 4
+    },
+    {
+      "n": 2,
+      "actor": "harness",
+      "text": "The API is restarted: nothing in memory survives, only PostgreSQL.",
+      "afterSeq": 4
+    },
+    {
+      "n": 3,
+      "actor": "client",
+      "text": "Retry with the same key and body returns 202 with the ORIGINAL transfer tr_1fd0df1c8ff761e0cf35 (Idempotent-Replayed: true).",
+      "afterSeq": 5
+    },
+    {
+      "n": 4,
+      "actor": "client",
+      "text": "Same key with a changed amount is refused: HTTP 409 IDEMPOTENCY_CONFLICT. Nothing is created or changed.",
+      "afterSeq": 6
+    },
+    {
+      "n": 5,
+      "actor": "worker",
+      "text": "The worker submits once under the stable provider reference; the provider completes; funds settle once.",
+      "afterSeq": 12
+    }
+  ],
+  "trace": [
+    {
+      "eventId": "ev_8df469e454967b66c674",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 1,
+      "type": "request_accepted",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.003Z",
+      "correlationId": "req_37493e28cff034310b21",
+      "causationId": null,
+      "facts": {
+        "asset": "DEMO_USD",
+        "requestId": "req_37493e28cff034310b21",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "fingerprint": "4109b729868f82bc7a56695c2d60d22c2b5bdc5e3a76e2dc72ef1b0ecf890f89",
+        "idempotencyKey": "K-s1"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_397ad8afad5f1116ba84",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 2,
+      "type": "funds_reserved",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.005Z",
+      "correlationId": "req_37493e28cff034310b21",
+      "causationId": "ev_8df469e454967b66c674",
+      "facts": {
+        "asset": "DEMO_USD",
+        "phase": "reserve",
+        "batchId": "jb_9d12e318f0a6c797944b",
+        "postingIds": [
+          "jp_5387c1a1c6eaac277d50",
+          "jp_023709714ef43b72fbc2"
+        ],
+        "amountMinor": "1250"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_ab8e6308f14282b0d2d6",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 3,
+      "type": "job_scheduled",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.006Z",
+      "correlationId": "req_37493e28cff034310b21",
+      "causationId": "ev_8df469e454967b66c674",
+      "facts": {
+        "jobId": "job_daa9575ecf0c58ed4d11"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_0ef59d5d98695afbe512",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 4,
+      "type": "fault_injected",
+      "source": "harness",
+      "recordedAt": "2026-01-01T00:00:00.008Z",
+      "correlationId": "scenario-harness",
+      "causationId": null,
+      "facts": {
+        "fault": "response_dropped_after_commit",
+        "where": "between API commit and client",
+        "clientObserved": "connection closed without an HTTP response"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_421b5cdf907024757417",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 5,
+      "type": "request_replayed",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.017Z",
+      "correlationId": "req_f1be8894a00472edc3ad",
+      "causationId": null,
+      "facts": {
+        "effect": "none",
+        "requestId": "req_f1be8894a00472edc3ad",
+        "idempotencyKey": "K-s1",
+        "fingerprintMatches": true
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_74568151f236364058df",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 6,
+      "type": "idempotency_conflict_rejected",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.019Z",
+      "correlationId": "req_f1f3690f5ef11c656fef",
+      "causationId": null,
+      "facts": {
+        "effect": "none",
+        "requestId": "req_f1f3690f5ef11c656fef",
+        "idempotencyKey": "K-s1",
+        "fingerprintMatches": false
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_8996349304e9b4114959",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 7,
+      "type": "job_claimed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.029Z",
+      "correlationId": "job_daa9575ecf0c58ed4d11#1",
+      "causationId": null,
+      "facts": {
+        "jobId": "job_daa9575ecf0c58ed4d11",
+        "workerId": "worker-1",
+        "leaseToken": 1,
+        "stateWhenClaimed": "reserved"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_b36dd78ea8f37894700c",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 8,
+      "type": "state_changed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.031Z",
+      "correlationId": "job_daa9575ecf0c58ed4d11#1",
+      "causationId": "ev_8996349304e9b4114959",
+      "facts": {
+        "to": "submitting",
+        "from": "reserved",
+        "journalBatchId": null
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_937cd07d3fa44cbfec84",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 9,
+      "type": "submission_attempted",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.032Z",
+      "correlationId": "job_daa9575ecf0c58ed4d11#1",
+      "causationId": "ev_8996349304e9b4114959",
+      "facts": {
+        "attemptId": "att_03d86c7f6f4cc92ba280",
+        "attemptNo": 1,
+        "resubmission": false,
+        "providerReference": "pref_70153f1340cc66f0c63e"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_4d75a6b4133bb969f1e3",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 10,
+      "type": "provider_observation_received",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.039Z",
+      "correlationId": "job_daa9575ecf0c58ed4d11#1",
+      "causationId": "ev_8996349304e9b4114959",
+      "facts": {
+        "channel": "submit_response",
+        "decision": "settled",
+        "sourceId": "att_03d86c7f6f4cc92ba280",
+        "finalNoEffect": false,
+        "observationId": "obs_f6181ee0c5d360a36dcb",
+        "providerStatus": "completed",
+        "providerSequence": 2,
+        "stateWhenObserved": "submitting",
+        "providerOccurredAt": "2026-01-01T00:00:00.035Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_b2698d2038452bc6a131",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 11,
+      "type": "funds_settled",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.041Z",
+      "correlationId": "job_daa9575ecf0c58ed4d11#1",
+      "causationId": "ev_4d75a6b4133bb969f1e3",
+      "facts": {
+        "asset": "DEMO_USD",
+        "phase": "settle",
+        "batchId": "jb_7ddfcdc8d1f301f850f0",
+        "postingIds": [
+          "jp_f043f0d41db82a1ea40e",
+          "jp_8e40d6ef61c8d9fa58aa"
+        ],
+        "amountMinor": "1250"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_3ef9a429fc9752e9445b",
+      "transferId": "tr_1fd0df1c8ff761e0cf35",
+      "seq": 12,
+      "type": "state_changed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.042Z",
+      "correlationId": "job_daa9575ecf0c58ed4d11#1",
+      "causationId": "ev_4d75a6b4133bb969f1e3",
+      "facts": {
+        "to": "settled",
+        "from": "submitting",
+        "journalBatchId": "jb_7ddfcdc8d1f301f850f0"
+      },
+      "untrusted": null
+    }
+  ],
+  "moments": [
+    {
+      "id": "after-lost-response",
+      "label": "Response lost; transfer durably accepted",
+      "afterSeq": 4,
+      "transfer": {
+        "transferId": "tr_1fd0df1c8ff761e0cf35",
+        "runId": "S1-1",
+        "accountId": "S1-1-A",
+        "asset": "DEMO_USD",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "state": "reserved",
+        "providerReference": "pref_70153f1340cc66f0c63e",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00.002Z",
+        "updatedAt": "2026-01-01T00:00:00.002Z",
+        "lastProviderObservation": null,
+        "untrusted": null
+      },
+      "balances": {
+        "accountId": "S1-1-A",
+        "observedAt": "2026-01-01T00:00:00.010Z",
+        "asset": "DEMO_USD",
+        "availableMinor": "98750",
+        "reservedMinor": "1250",
+        "runClearingMinor": "0"
+      },
+      "invariants": {
+        "transferId": "tr_1fd0df1c8ff761e0cf35",
+        "transferState": "reserved",
+        "observedAt": "2026-01-01T00:00:00.012Z",
+        "results": [
+          {
+            "id": "I1",
+            "title": "Identity: one accepted logical transfer per scoped idempotency key and payload",
+            "status": "pass",
+            "explanation": "One idempotency record maps to this transfer and its stored fingerprint matches the transfer's asset, amount and destination. 0 replayed request(s) and 0 conflicting request(s) were answered without creating another transfer.",
+            "evidenceIds": [
+              "ev_8df469e454967b66c674"
+            ]
+          },
+          {
+            "id": "I2",
+            "title": "Conservation: every journal batch balances and projections equal journal totals",
+            "status": "pass",
+            "explanation": "1 posting batch(es) each sum to zero in DEMO_USD; projected balances equal journal totals for the accounts this transfer touches.",
+            "evidenceIds": [
+              "jb_9d12e318f0a6c797944b"
+            ]
+          },
+          {
+            "id": "I3",
+            "title": "Effects: one reservation, at most one terminal effect, settle and release mutually exclusive",
+            "status": "pass",
+            "explanation": "Journal shows 1 reservation, 0 settlement and 0 release batch(es) for this transfer.",
+            "evidenceIds": [
+              "jb_9d12e318f0a6c797944b"
+            ]
+          },
+          {
+            "id": "I4",
+            "title": "Availability: accepted transfers cannot overdraw available or reserved funds",
+            "status": "pass",
+            "explanation": "Available and reserved balances are nonnegative in both the projection and the journal.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I5",
+            "title": "State: terminal states never regress and agree with journal postings",
+            "status": "pass",
+            "explanation": "State \"reserved\" agrees with the journal (0 settlement, 0 release) and no state change follows a terminal state.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I6",
+            "title": "External identity: one provider reference for all attempts; at most one external effect per reference",
+            "status": "pass",
+            "explanation": "All 0 provider call(s) (0 submission(s)) used the single provider reference pref_70153f1340cc66f0c63e. No submission was ever sent, so no external effect can exist.",
+            "evidenceIds": [],
+            "parts": [
+              {
+                "id": "I6.local",
+                "status": "pass",
+                "explanation": "All 0 provider call(s) (0 submission(s)) used the single provider reference pref_70153f1340cc66f0c63e."
+              },
+              {
+                "id": "I6.external",
+                "status": "pass",
+                "explanation": "No submission was ever sent, so no external effect can exist."
+              }
+            ]
+          },
+          {
+            "id": "I7",
+            "title": "Uncertainty: timeouts never imply rejection or release; incomplete evidence stays unresolved",
+            "status": "pass",
+            "explanation": "0 inconclusive provider call(s) recorded; none led to a release.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I8",
+            "title": "Traceability: requests, attempts, observations and transitions have stable linked evidence IDs",
+            "status": "pass",
+            "explanation": "4 trace events form a gap-free sequence; every journal batch and provider call is referenced by a trace event and every causation link resolves to an earlier event.",
+            "evidenceIds": []
+          }
+        ],
+        "summary": {
+          "pass": 8,
+          "fail": 0,
+          "unknown": 0
+        },
+        "unresolvedExternalOutcome": false
+      },
+      "exceptions": [],
+      "evidence": {
+        "transferId": "tr_1fd0df1c8ff761e0cf35",
+        "observedAt": "2026-01-01T00:00:00.015Z",
+        "journal": [
+          {
+            "batchId": "jb_9d12e318f0a6c797944b",
+            "phase": "reserve",
+            "createdAt": "2026-01-01T00:00:00.004Z",
+            "postings": [
+              {
+                "postingId": "jp_5387c1a1c6eaac277d50",
+                "ledgerAccount": "user:S1-1-A:available",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              },
+              {
+                "postingId": "jp_023709714ef43b72fbc2",
+                "ledgerAccount": "user:S1-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              }
+            ]
+          }
+        ],
+        "providerAttempts": [],
+        "providerObservations": [],
+        "webhookEvents": [],
+        "truncated": false
+      },
+      "answer": {
+        "verdict": "no",
+        "text": "No. 1 request(s) with the same key map to one transfer; the journal holds 1 reservation and 0 terminal effect.",
+        "evidenceIds": [
+          "ev_8df469e454967b66c674",
+          "jb_9d12e318f0a6c797944b"
+        ]
+      }
+    },
+    {
+      "id": "after-retries",
+      "label": "Three requests, one transfer, one reservation",
+      "afterSeq": 6,
+      "transfer": {
+        "transferId": "tr_1fd0df1c8ff761e0cf35",
+        "runId": "S1-1",
+        "accountId": "S1-1-A",
+        "asset": "DEMO_USD",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "state": "reserved",
+        "providerReference": "pref_70153f1340cc66f0c63e",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00.002Z",
+        "updatedAt": "2026-01-01T00:00:00.002Z",
+        "lastProviderObservation": null,
+        "untrusted": null
+      },
+      "balances": {
+        "accountId": "S1-1-A",
+        "observedAt": "2026-01-01T00:00:00.021Z",
+        "asset": "DEMO_USD",
+        "availableMinor": "98750",
+        "reservedMinor": "1250",
+        "runClearingMinor": "0"
+      },
+      "invariants": {
+        "transferId": "tr_1fd0df1c8ff761e0cf35",
+        "transferState": "reserved",
+        "observedAt": "2026-01-01T00:00:00.023Z",
+        "results": [
+          {
+            "id": "I1",
+            "title": "Identity: one accepted logical transfer per scoped idempotency key and payload",
+            "status": "pass",
+            "explanation": "One idempotency record maps to this transfer and its stored fingerprint matches the transfer's asset, amount and destination. 1 replayed request(s) and 1 conflicting request(s) were answered without creating another transfer.",
+            "evidenceIds": [
+              "ev_8df469e454967b66c674",
+              "ev_421b5cdf907024757417",
+              "ev_74568151f236364058df"
+            ]
+          },
+          {
+            "id": "I2",
+            "title": "Conservation: every journal batch balances and projections equal journal totals",
+            "status": "pass",
+            "explanation": "1 posting batch(es) each sum to zero in DEMO_USD; projected balances equal journal totals for the accounts this transfer touches.",
+            "evidenceIds": [
+              "jb_9d12e318f0a6c797944b"
+            ]
+          },
+          {
+            "id": "I3",
+            "title": "Effects: one reservation, at most one terminal effect, settle and release mutually exclusive",
+            "status": "pass",
+            "explanation": "Journal shows 1 reservation, 0 settlement and 0 release batch(es) for this transfer.",
+            "evidenceIds": [
+              "jb_9d12e318f0a6c797944b"
+            ]
+          },
+          {
+            "id": "I4",
+            "title": "Availability: accepted transfers cannot overdraw available or reserved funds",
+            "status": "pass",
+            "explanation": "Available and reserved balances are nonnegative in both the projection and the journal.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I5",
+            "title": "State: terminal states never regress and agree with journal postings",
+            "status": "pass",
+            "explanation": "State \"reserved\" agrees with the journal (0 settlement, 0 release) and no state change follows a terminal state.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I6",
+            "title": "External identity: one provider reference for all attempts; at most one external effect per reference",
+            "status": "pass",
+            "explanation": "All 0 provider call(s) (0 submission(s)) used the single provider reference pref_70153f1340cc66f0c63e. No submission was ever sent, so no external effect can exist.",
+            "evidenceIds": [],
+            "parts": [
+              {
+                "id": "I6.local",
+                "status": "pass",
+                "explanation": "All 0 provider call(s) (0 submission(s)) used the single provider reference pref_70153f1340cc66f0c63e."
+              },
+              {
+                "id": "I6.external",
+                "status": "pass",
+                "explanation": "No submission was ever sent, so no external effect can exist."
+              }
+            ]
+          },
+          {
+            "id": "I7",
+            "title": "Uncertainty: timeouts never imply rejection or release; incomplete evidence stays unresolved",
+            "status": "pass",
+            "explanation": "0 inconclusive provider call(s) recorded; none led to a release.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I8",
+            "title": "Traceability: requests, attempts, observations and transitions have stable linked evidence IDs",
+            "status": "pass",
+            "explanation": "6 trace events form a gap-free sequence; every journal batch and provider call is referenced by a trace event and every causation link resolves to an earlier event.",
+            "evidenceIds": []
+          }
+        ],
+        "summary": {
+          "pass": 8,
+          "fail": 0,
+          "unknown": 0
+        },
+        "unresolvedExternalOutcome": false
+      },
+      "exceptions": [],
+      "evidence": {
+        "transferId": "tr_1fd0df1c8ff761e0cf35",
+        "observedAt": "2026-01-01T00:00:00.026Z",
+        "journal": [
+          {
+            "batchId": "jb_9d12e318f0a6c797944b",
+            "phase": "reserve",
+            "createdAt": "2026-01-01T00:00:00.004Z",
+            "postings": [
+              {
+                "postingId": "jp_5387c1a1c6eaac277d50",
+                "ledgerAccount": "user:S1-1-A:available",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              },
+              {
+                "postingId": "jp_023709714ef43b72fbc2",
+                "ledgerAccount": "user:S1-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              }
+            ]
+          }
+        ],
+        "providerAttempts": [],
+        "providerObservations": [],
+        "webhookEvents": [],
+        "truncated": false
+      },
+      "answer": {
+        "verdict": "no",
+        "text": "No. 3 request(s) with the same key map to one transfer; the journal holds 1 reservation and 0 terminal effect.",
+        "evidenceIds": [
+          "ev_8df469e454967b66c674",
+          "ev_421b5cdf907024757417",
+          "ev_74568151f236364058df",
+          "jb_9d12e318f0a6c797944b"
+        ]
+      }
+    },
+    {
+      "id": "final",
+      "label": "Settled once",
+      "afterSeq": 12,
+      "transfer": {
+        "transferId": "tr_1fd0df1c8ff761e0cf35",
+        "runId": "S1-1",
+        "accountId": "S1-1-A",
+        "asset": "DEMO_USD",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "state": "settled",
+        "providerReference": "pref_70153f1340cc66f0c63e",
+        "version": 3,
+        "createdAt": "2026-01-01T00:00:00.002Z",
+        "updatedAt": "2026-01-01T00:00:00.038Z",
+        "lastProviderObservation": {
+          "observationId": "obs_f6181ee0c5d360a36dcb",
+          "providerStatus": "completed",
+          "providerSequence": 2,
+          "observedAt": "2026-01-01T00:00:00.038Z",
+          "ageMs": 6
+        },
+        "untrusted": null
+      },
+      "balances": {
+        "accountId": "S1-1-A",
+        "observedAt": "2026-01-01T00:00:00.045Z",
+        "asset": "DEMO_USD",
+        "availableMinor": "98750",
+        "reservedMinor": "0",
+        "runClearingMinor": "1250"
+      },
+      "invariants": {
+        "transferId": "tr_1fd0df1c8ff761e0cf35",
+        "transferState": "settled",
+        "observedAt": "2026-01-01T00:00:00.047Z",
+        "results": [
+          {
+            "id": "I1",
+            "title": "Identity: one accepted logical transfer per scoped idempotency key and payload",
+            "status": "pass",
+            "explanation": "One idempotency record maps to this transfer and its stored fingerprint matches the transfer's asset, amount and destination. 1 replayed request(s) and 1 conflicting request(s) were answered without creating another transfer.",
+            "evidenceIds": [
+              "ev_8df469e454967b66c674",
+              "ev_421b5cdf907024757417",
+              "ev_74568151f236364058df"
+            ]
+          },
+          {
+            "id": "I2",
+            "title": "Conservation: every journal batch balances and projections equal journal totals",
+            "status": "pass",
+            "explanation": "2 posting batch(es) each sum to zero in DEMO_USD; projected balances equal journal totals for the accounts this transfer touches.",
+            "evidenceIds": [
+              "jb_7ddfcdc8d1f301f850f0",
+              "jb_9d12e318f0a6c797944b"
+            ]
+          },
+          {
+            "id": "I3",
+            "title": "Effects: one reservation, at most one terminal effect, settle and release mutually exclusive",
+            "status": "pass",
+            "explanation": "Journal shows 1 reservation, 1 settlement and 0 release batch(es) for this transfer.",
+            "evidenceIds": [
+              "jb_7ddfcdc8d1f301f850f0",
+              "jb_9d12e318f0a6c797944b"
+            ]
+          },
+          {
+            "id": "I4",
+            "title": "Availability: accepted transfers cannot overdraw available or reserved funds",
+            "status": "pass",
+            "explanation": "Available and reserved balances are nonnegative in both the projection and the journal.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I5",
+            "title": "State: terminal states never regress and agree with journal postings",
+            "status": "pass",
+            "explanation": "State \"settled\" agrees with the journal (1 settlement, 0 release) and no state change follows a terminal state.",
+            "evidenceIds": [
+              "jb_7ddfcdc8d1f301f850f0"
+            ]
+          },
+          {
+            "id": "I6",
+            "title": "External identity: one provider reference for all attempts; at most one external effect per reference",
+            "status": "unknown",
+            "explanation": "All 1 provider call(s) (1 submission(s)) used the single provider reference pref_70153f1340cc66f0c63e. The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it.",
+            "evidenceIds": [
+              "att_03d86c7f6f4cc92ba280"
+            ],
+            "parts": [
+              {
+                "id": "I6.local",
+                "status": "pass",
+                "explanation": "All 1 provider call(s) (1 submission(s)) used the single provider reference pref_70153f1340cc66f0c63e."
+              },
+              {
+                "id": "I6.external",
+                "status": "unknown",
+                "explanation": "The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it."
+              }
+            ]
+          },
+          {
+            "id": "I7",
+            "title": "Uncertainty: timeouts never imply rejection or release; incomplete evidence stays unresolved",
+            "status": "pass",
+            "explanation": "0 inconclusive provider call(s) recorded; none led to a release.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I8",
+            "title": "Traceability: requests, attempts, observations and transitions have stable linked evidence IDs",
+            "status": "pass",
+            "explanation": "12 trace events form a gap-free sequence; every journal batch and provider call is referenced by a trace event and every causation link resolves to an earlier event.",
+            "evidenceIds": []
+          }
+        ],
+        "summary": {
+          "pass": 7,
+          "fail": 0,
+          "unknown": 1
+        },
+        "unresolvedExternalOutcome": false
+      },
+      "exceptions": [],
+      "evidence": {
+        "transferId": "tr_1fd0df1c8ff761e0cf35",
+        "observedAt": "2026-01-01T00:00:00.050Z",
+        "journal": [
+          {
+            "batchId": "jb_9d12e318f0a6c797944b",
+            "phase": "reserve",
+            "createdAt": "2026-01-01T00:00:00.004Z",
+            "postings": [
+              {
+                "postingId": "jp_5387c1a1c6eaac277d50",
+                "ledgerAccount": "user:S1-1-A:available",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              },
+              {
+                "postingId": "jp_023709714ef43b72fbc2",
+                "ledgerAccount": "user:S1-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              }
+            ]
+          },
+          {
+            "batchId": "jb_7ddfcdc8d1f301f850f0",
+            "phase": "settle",
+            "createdAt": "2026-01-01T00:00:00.040Z",
+            "postings": [
+              {
+                "postingId": "jp_f043f0d41db82a1ea40e",
+                "ledgerAccount": "provider:clearing",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              },
+              {
+                "postingId": "jp_8e40d6ef61c8d9fa58aa",
+                "ledgerAccount": "user:S1-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              }
+            ]
+          }
+        ],
+        "providerAttempts": [
+          {
+            "attemptId": "att_03d86c7f6f4cc92ba280",
+            "kind": "submit",
+            "attemptNo": 1,
+            "providerReference": "pref_70153f1340cc66f0c63e",
+            "leaseToken": 1,
+            "startedAt": "2026-01-01T00:00:00.028Z",
+            "finishedAt": "2026-01-01T00:00:00.037Z",
+            "outcome": "completed",
+            "httpStatus": 201,
+            "detail": null
+          }
+        ],
+        "providerObservations": [
+          {
+            "observationId": "obs_f6181ee0c5d360a36dcb",
+            "channel": "submit_response",
+            "sourceId": "att_03d86c7f6f4cc92ba280",
+            "providerStatus": "completed",
+            "providerSequence": 2,
+            "finalNoEffect": false,
+            "providerOccurredAt": "2026-01-01T00:00:00.035Z",
+            "observedAt": "2026-01-01T00:00:00.038Z",
+            "decision": "settled",
+            "untrusted": null
+          }
+        ],
+        "webhookEvents": [],
+        "truncated": false
+      },
+      "answer": {
+        "verdict": "no",
+        "text": "No. 3 request(s) with the same key map to one transfer; the journal holds 1 reservation and 1 terminal effect.",
+        "evidenceIds": [
+          "ev_8df469e454967b66c674",
+          "ev_421b5cdf907024757417",
+          "ev_74568151f236364058df",
+          "jb_7ddfcdc8d1f301f850f0",
+          "jb_9d12e318f0a6c797944b"
+        ]
+      }
+    }
+  ],
+  "oracle": {
+    "privileged": true,
+    "notice": "Simulator ground truth read by the test harness. The application and the investigating agent never see this; it is shown only so a reviewer can check that the application did not guess.",
+    "providerStatus": "completed",
+    "providerEffectCount": 1,
+    "providerEvents": [
+      {
+        "eventId": "evt_abba15d9aa5a33092474",
+        "status": "pending",
+        "sequence": 1,
+        "forced": false,
+        "deliveryCount": 0
+      },
+      {
+        "eventId": "evt_fe5e0125739a0037f740",
+        "status": "completed",
+        "sequence": 2,
+        "forced": false,
+        "deliveryCount": 0
+      }
+    ]
+  },
+  "agentDiagnosis": null
+}

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "payment-reliability-lab": {
+      "command": "node",
+      "args": ["dist/mcp/main.js"],
+      "env": {
+        "PRL_MCP_RUN_IDS": "${PRL_MCP_RUN_IDS:-S1-1,S2-1,S3-1,S7-1,S8-1}"
+      }
+    }
+  }
+}

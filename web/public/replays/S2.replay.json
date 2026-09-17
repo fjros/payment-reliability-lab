@@ -1,0 +1,1019 @@
+{
+  "format": "payment-reliability-lab/replay",
+  "version": 1,
+  "scenario": {
+    "id": "S2",
+    "title": "Duplicate and out-of-order notifications",
+    "question": "Did the duplicate notification change the balance?",
+    "summary": "The provider delivers the completion several times, under two event IDs, and then an older \"pending\" event arrives late."
+  },
+  "seed": "1",
+  "runId": "S2-1",
+  "accountId": "S2-1-A",
+  "transferId": "tr_6d313d6bafc141abc61b",
+  "generatedAt": "2026-09-17T07:43:27.723Z",
+  "scenarioClock": "Deterministic manual clock starting 2026-01-01T00:00:00.000Z; timestamps order events but are not wall-clock measurements.",
+  "implementationRevision": "unavailable",
+  "provenance": {
+    "kind": "recorded-deterministic-scenario-run",
+    "synthetic": true,
+    "generator": "npm run demo:export -- S2",
+    "note": "Recorded from a real local run (real PostgreSQL, real HTTP between API, worker and provider simulator). All accounts, funds and providers are synthetic. This is a static replay, not live MCP or agent execution."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "actor": "client",
+      "text": "POST /v1/transfers with Idempotency-Key \"K-s2\" is accepted (202): tr_6d313d6bafc141abc61b.",
+      "afterSeq": 3
+    },
+    {
+      "n": 2,
+      "actor": "worker",
+      "text": "The worker submits; the provider answers \"pending\".",
+      "afterSeq": 8
+    },
+    {
+      "n": 3,
+      "actor": "provider",
+      "text": "Completion webhook evt_7a1216bbf37450a04636 (provider sequence 2) arrives first and is verified, stored, then applied: settled.",
+      "afterSeq": 12
+    },
+    {
+      "n": 4,
+      "actor": "provider",
+      "text": "The exact same event is delivered twice more (fresh transport signatures). Acknowledged as duplicates; no new inbox row.",
+      "afterSeq": 14
+    },
+    {
+      "n": 5,
+      "actor": "provider",
+      "text": "A DIFFERENT event ID evt_7b9587c98aba5381ed6d describes the same completion. It is a new delivery but a duplicate business outcome: ignored.",
+      "afterSeq": 17
+    },
+    {
+      "n": 6,
+      "actor": "provider",
+      "text": "The older \"pending\" event evt_58f37ad9c7d32a326cc7 (provider sequence 1) arrives last. Recorded as stale; the settled state does not regress.",
+      "afterSeq": 20
+    }
+  ],
+  "trace": [
+    {
+      "eventId": "ev_9c5c37129d4b65a9890b",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 1,
+      "type": "request_accepted",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.003Z",
+      "correlationId": "req_fcbbd56425d5095e63a2",
+      "causationId": null,
+      "facts": {
+        "asset": "DEMO_USD",
+        "requestId": "req_fcbbd56425d5095e63a2",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "fingerprint": "4109b729868f82bc7a56695c2d60d22c2b5bdc5e3a76e2dc72ef1b0ecf890f89",
+        "idempotencyKey": "K-s2"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_5cbaabee311e02ea3649",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 2,
+      "type": "funds_reserved",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.005Z",
+      "correlationId": "req_fcbbd56425d5095e63a2",
+      "causationId": "ev_9c5c37129d4b65a9890b",
+      "facts": {
+        "asset": "DEMO_USD",
+        "phase": "reserve",
+        "batchId": "jb_88745fb4f7b4cdeaddb9",
+        "postingIds": [
+          "jp_a3910d2ca1a4b39e73fe",
+          "jp_1529ea006446e7613be6"
+        ],
+        "amountMinor": "1250"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_225e383e144dc6b6aa90",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 3,
+      "type": "job_scheduled",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.006Z",
+      "correlationId": "req_fcbbd56425d5095e63a2",
+      "causationId": "ev_9c5c37129d4b65a9890b",
+      "facts": {
+        "jobId": "job_f18f7f680f1febc15dd5"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_6654edb6ef32f136e8e8",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 4,
+      "type": "job_claimed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.011Z",
+      "correlationId": "job_f18f7f680f1febc15dd5#1",
+      "causationId": null,
+      "facts": {
+        "jobId": "job_f18f7f680f1febc15dd5",
+        "workerId": "worker-1",
+        "leaseToken": 1,
+        "stateWhenClaimed": "reserved"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_16e013953413ff4e80f0",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 5,
+      "type": "state_changed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.013Z",
+      "correlationId": "job_f18f7f680f1febc15dd5#1",
+      "causationId": "ev_6654edb6ef32f136e8e8",
+      "facts": {
+        "to": "submitting",
+        "from": "reserved",
+        "journalBatchId": null
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_5d046f18eae528eecf97",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 6,
+      "type": "submission_attempted",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.014Z",
+      "correlationId": "job_f18f7f680f1febc15dd5#1",
+      "causationId": "ev_6654edb6ef32f136e8e8",
+      "facts": {
+        "attemptId": "att_5b2bb0b52edba908ab6b",
+        "attemptNo": 1,
+        "resubmission": false,
+        "providerReference": "pref_44fa363f7512b009d075"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_26e3695317a0e9e904f0",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 7,
+      "type": "provider_observation_received",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.019Z",
+      "correlationId": "job_f18f7f680f1febc15dd5#1",
+      "causationId": "ev_6654edb6ef32f136e8e8",
+      "facts": {
+        "channel": "submit_response",
+        "decision": "provider_pending",
+        "sourceId": "att_5b2bb0b52edba908ab6b",
+        "finalNoEffect": false,
+        "observationId": "obs_a241943ee3d46d039127",
+        "providerStatus": "pending",
+        "providerSequence": 1,
+        "stateWhenObserved": "submitting",
+        "providerOccurredAt": "2026-01-01T00:00:00.015Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_a3e039cdd52ed1951b77",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 8,
+      "type": "state_changed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.020Z",
+      "correlationId": "job_f18f7f680f1febc15dd5#1",
+      "causationId": "ev_26e3695317a0e9e904f0",
+      "facts": {
+        "to": "provider_pending",
+        "from": "submitting",
+        "journalBatchId": null
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_0fc8f5233f017dc00b38",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 9,
+      "type": "webhook_accepted",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.026Z",
+      "correlationId": "dlv_568d15f9ad765f6a2f73",
+      "causationId": null,
+      "facts": {
+        "deliveryId": "dlv_568d15f9ad765f6a2f73",
+        "payloadHash": "cbeb3f24a1a34f3b4061fc8b1c77d9ca40adefe3fd0fe3e834810f08b32caa2d",
+        "providerStatus": "completed",
+        "providerEventId": "evt_7a1216bbf37450a04636",
+        "providerSequence": 2,
+        "providerOccurredAt": "2026-01-01T00:00:00.022Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_592af744040085f139ae",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 10,
+      "type": "provider_observation_received",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.028Z",
+      "correlationId": "evt_7a1216bbf37450a04636",
+      "causationId": "ev_0fc8f5233f017dc00b38",
+      "facts": {
+        "channel": "webhook",
+        "decision": "settled",
+        "sourceId": "evt_7a1216bbf37450a04636",
+        "finalNoEffect": false,
+        "observationId": "obs_a35a5bbecca4c28e89db",
+        "providerStatus": "completed",
+        "providerSequence": 2,
+        "stateWhenObserved": "provider_pending",
+        "providerOccurredAt": "2026-01-01T00:00:00.022Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_d918b24c926c988df411",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 11,
+      "type": "funds_settled",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.030Z",
+      "correlationId": "evt_7a1216bbf37450a04636",
+      "causationId": "ev_592af744040085f139ae",
+      "facts": {
+        "asset": "DEMO_USD",
+        "phase": "settle",
+        "batchId": "jb_dd32ce930ec331e3a9af",
+        "postingIds": [
+          "jp_122f704e1c2a2b9aca36",
+          "jp_ba0729092fe2d412c09a"
+        ],
+        "amountMinor": "1250"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_9cb940d5a20831ead528",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 12,
+      "type": "state_changed",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.031Z",
+      "correlationId": "evt_7a1216bbf37450a04636",
+      "causationId": "ev_592af744040085f139ae",
+      "facts": {
+        "to": "settled",
+        "from": "provider_pending",
+        "journalBatchId": "jb_dd32ce930ec331e3a9af"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_ddb0e6bb636211765dc0",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 13,
+      "type": "duplicate_ignored",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.045Z",
+      "correlationId": "dlv_dfe444aadf4cc3ae0787",
+      "causationId": null,
+      "facts": {
+        "level": "delivery",
+        "effect": "none",
+        "deliveryId": "dlv_dfe444aadf4cc3ae0787",
+        "payloadHash": "cbeb3f24a1a34f3b4061fc8b1c77d9ca40adefe3fd0fe3e834810f08b32caa2d",
+        "providerStatus": "completed",
+        "providerEventId": "evt_7a1216bbf37450a04636",
+        "providerSequence": 2,
+        "providerOccurredAt": "2026-01-01T00:00:00.022Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_26a56ee205e652b14b5e",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 14,
+      "type": "duplicate_ignored",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.049Z",
+      "correlationId": "dlv_6c64877a090c1115b59d",
+      "causationId": null,
+      "facts": {
+        "level": "delivery",
+        "effect": "none",
+        "deliveryId": "dlv_6c64877a090c1115b59d",
+        "payloadHash": "cbeb3f24a1a34f3b4061fc8b1c77d9ca40adefe3fd0fe3e834810f08b32caa2d",
+        "providerStatus": "completed",
+        "providerEventId": "evt_7a1216bbf37450a04636",
+        "providerSequence": 2,
+        "providerOccurredAt": "2026-01-01T00:00:00.022Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_ea302d959f342165a6c0",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 15,
+      "type": "webhook_accepted",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.054Z",
+      "correlationId": "dlv_fa42763a6283b6f33be9",
+      "causationId": null,
+      "facts": {
+        "deliveryId": "dlv_fa42763a6283b6f33be9",
+        "payloadHash": "883b312d565199f206f116540e9850f2b04b7efa967572ac626d187537700802",
+        "providerStatus": "completed",
+        "providerEventId": "evt_7b9587c98aba5381ed6d",
+        "providerSequence": 2,
+        "providerOccurredAt": "2026-01-01T00:00:00.050Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_40ec21eaebd6583d5ab9",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 16,
+      "type": "provider_observation_received",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.056Z",
+      "correlationId": "evt_7b9587c98aba5381ed6d",
+      "causationId": "ev_ea302d959f342165a6c0",
+      "facts": {
+        "channel": "webhook",
+        "decision": "duplicate_outcome",
+        "sourceId": "evt_7b9587c98aba5381ed6d",
+        "finalNoEffect": false,
+        "observationId": "obs_a713cbbcd8bdfe570b4e",
+        "providerStatus": "completed",
+        "providerSequence": 2,
+        "stateWhenObserved": "settled",
+        "providerOccurredAt": "2026-01-01T00:00:00.050Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_67d38bd93b49445eeb1a",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 17,
+      "type": "duplicate_ignored",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.057Z",
+      "correlationId": "evt_7b9587c98aba5381ed6d",
+      "causationId": "ev_40ec21eaebd6583d5ab9",
+      "facts": {
+        "level": "business_outcome",
+        "state": "settled",
+        "effect": "none",
+        "observationId": "obs_a713cbbcd8bdfe570b4e"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_372767602c172f5debab",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 18,
+      "type": "webhook_accepted",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.064Z",
+      "correlationId": "dlv_527537d1f7bdf9611c5e",
+      "causationId": null,
+      "facts": {
+        "deliveryId": "dlv_527537d1f7bdf9611c5e",
+        "payloadHash": "8174821c7b26e096287d68e154b2936ae741c8086d1f2664a19a4c1694a99f44",
+        "providerStatus": "pending",
+        "providerEventId": "evt_58f37ad9c7d32a326cc7",
+        "providerSequence": 1,
+        "providerOccurredAt": "2026-01-01T00:00:00.016Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_367ecfc93a914a5e74b4",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 19,
+      "type": "provider_observation_received",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.066Z",
+      "correlationId": "evt_58f37ad9c7d32a326cc7",
+      "causationId": "ev_372767602c172f5debab",
+      "facts": {
+        "channel": "webhook",
+        "decision": "stale_observation",
+        "sourceId": "evt_58f37ad9c7d32a326cc7",
+        "finalNoEffect": false,
+        "observationId": "obs_fa3051a4f937dadfbc2a",
+        "providerStatus": "pending",
+        "providerSequence": 1,
+        "stateWhenObserved": "settled",
+        "providerOccurredAt": "2026-01-01T00:00:00.016Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_f95e941a9ade72701527",
+      "transferId": "tr_6d313d6bafc141abc61b",
+      "seq": 20,
+      "type": "stale_event_ignored",
+      "source": "webhook",
+      "recordedAt": "2026-01-01T00:00:00.067Z",
+      "correlationId": "evt_58f37ad9c7d32a326cc7",
+      "causationId": "ev_367ecfc93a914a5e74b4",
+      "facts": {
+        "level": "business_outcome",
+        "state": "settled",
+        "effect": "none",
+        "observationId": "obs_fa3051a4f937dadfbc2a"
+      },
+      "untrusted": null
+    }
+  ],
+  "moments": [
+    {
+      "id": "after-first-completion",
+      "label": "First completion applied",
+      "afterSeq": 12,
+      "transfer": {
+        "transferId": "tr_6d313d6bafc141abc61b",
+        "runId": "S2-1",
+        "accountId": "S2-1-A",
+        "asset": "DEMO_USD",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "state": "settled",
+        "providerReference": "pref_44fa363f7512b009d075",
+        "version": 4,
+        "createdAt": "2026-01-01T00:00:00.002Z",
+        "updatedAt": "2026-01-01T00:00:00.027Z",
+        "lastProviderObservation": {
+          "observationId": "obs_a35a5bbecca4c28e89db",
+          "providerStatus": "completed",
+          "providerSequence": 2,
+          "observedAt": "2026-01-01T00:00:00.027Z",
+          "ageMs": 8
+        },
+        "untrusted": null
+      },
+      "balances": {
+        "accountId": "S2-1-A",
+        "observedAt": "2026-01-01T00:00:00.036Z",
+        "asset": "DEMO_USD",
+        "availableMinor": "98750",
+        "reservedMinor": "0",
+        "runClearingMinor": "1250"
+      },
+      "invariants": {
+        "transferId": "tr_6d313d6bafc141abc61b",
+        "transferState": "settled",
+        "observedAt": "2026-01-01T00:00:00.038Z",
+        "results": [
+          {
+            "id": "I1",
+            "title": "Identity: one accepted logical transfer per scoped idempotency key and payload",
+            "status": "pass",
+            "explanation": "One idempotency record maps to this transfer and its stored fingerprint matches the transfer's asset, amount and destination. 0 replayed request(s) and 0 conflicting request(s) were answered without creating another transfer.",
+            "evidenceIds": [
+              "ev_9c5c37129d4b65a9890b"
+            ]
+          },
+          {
+            "id": "I2",
+            "title": "Conservation: every journal batch balances and projections equal journal totals",
+            "status": "pass",
+            "explanation": "2 posting batch(es) each sum to zero in DEMO_USD; projected balances equal journal totals for the accounts this transfer touches.",
+            "evidenceIds": [
+              "jb_88745fb4f7b4cdeaddb9",
+              "jb_dd32ce930ec331e3a9af"
+            ]
+          },
+          {
+            "id": "I3",
+            "title": "Effects: one reservation, at most one terminal effect, settle and release mutually exclusive",
+            "status": "pass",
+            "explanation": "Journal shows 1 reservation, 1 settlement and 0 release batch(es) for this transfer.",
+            "evidenceIds": [
+              "jb_88745fb4f7b4cdeaddb9",
+              "jb_dd32ce930ec331e3a9af"
+            ]
+          },
+          {
+            "id": "I4",
+            "title": "Availability: accepted transfers cannot overdraw available or reserved funds",
+            "status": "pass",
+            "explanation": "Available and reserved balances are nonnegative in both the projection and the journal.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I5",
+            "title": "State: terminal states never regress and agree with journal postings",
+            "status": "pass",
+            "explanation": "State \"settled\" agrees with the journal (1 settlement, 0 release) and no state change follows a terminal state.",
+            "evidenceIds": [
+              "jb_dd32ce930ec331e3a9af"
+            ]
+          },
+          {
+            "id": "I6",
+            "title": "External identity: one provider reference for all attempts; at most one external effect per reference",
+            "status": "unknown",
+            "explanation": "All 1 provider call(s) (1 submission(s)) used the single provider reference pref_44fa363f7512b009d075. The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it.",
+            "evidenceIds": [
+              "att_5b2bb0b52edba908ab6b"
+            ],
+            "parts": [
+              {
+                "id": "I6.local",
+                "status": "pass",
+                "explanation": "All 1 provider call(s) (1 submission(s)) used the single provider reference pref_44fa363f7512b009d075."
+              },
+              {
+                "id": "I6.external",
+                "status": "unknown",
+                "explanation": "The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it."
+              }
+            ]
+          },
+          {
+            "id": "I7",
+            "title": "Uncertainty: timeouts never imply rejection or release; incomplete evidence stays unresolved",
+            "status": "pass",
+            "explanation": "0 inconclusive provider call(s) recorded; none led to a release.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I8",
+            "title": "Traceability: requests, attempts, observations and transitions have stable linked evidence IDs",
+            "status": "pass",
+            "explanation": "12 trace events form a gap-free sequence; every journal batch and provider call is referenced by a trace event and every causation link resolves to an earlier event.",
+            "evidenceIds": []
+          }
+        ],
+        "summary": {
+          "pass": 7,
+          "fail": 0,
+          "unknown": 1
+        },
+        "unresolvedExternalOutcome": false
+      },
+      "exceptions": [],
+      "evidence": {
+        "transferId": "tr_6d313d6bafc141abc61b",
+        "observedAt": "2026-01-01T00:00:00.041Z",
+        "journal": [
+          {
+            "batchId": "jb_88745fb4f7b4cdeaddb9",
+            "phase": "reserve",
+            "createdAt": "2026-01-01T00:00:00.004Z",
+            "postings": [
+              {
+                "postingId": "jp_a3910d2ca1a4b39e73fe",
+                "ledgerAccount": "user:S2-1-A:available",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              },
+              {
+                "postingId": "jp_1529ea006446e7613be6",
+                "ledgerAccount": "user:S2-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              }
+            ]
+          },
+          {
+            "batchId": "jb_dd32ce930ec331e3a9af",
+            "phase": "settle",
+            "createdAt": "2026-01-01T00:00:00.029Z",
+            "postings": [
+              {
+                "postingId": "jp_122f704e1c2a2b9aca36",
+                "ledgerAccount": "provider:clearing",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              },
+              {
+                "postingId": "jp_ba0729092fe2d412c09a",
+                "ledgerAccount": "user:S2-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              }
+            ]
+          }
+        ],
+        "providerAttempts": [
+          {
+            "attemptId": "att_5b2bb0b52edba908ab6b",
+            "kind": "submit",
+            "attemptNo": 1,
+            "providerReference": "pref_44fa363f7512b009d075",
+            "leaseToken": 1,
+            "startedAt": "2026-01-01T00:00:00.010Z",
+            "finishedAt": "2026-01-01T00:00:00.017Z",
+            "outcome": "pending",
+            "httpStatus": 201,
+            "detail": null
+          }
+        ],
+        "providerObservations": [
+          {
+            "observationId": "obs_a241943ee3d46d039127",
+            "channel": "submit_response",
+            "sourceId": "att_5b2bb0b52edba908ab6b",
+            "providerStatus": "pending",
+            "providerSequence": 1,
+            "finalNoEffect": false,
+            "providerOccurredAt": "2026-01-01T00:00:00.015Z",
+            "observedAt": "2026-01-01T00:00:00.018Z",
+            "decision": "provider_pending",
+            "untrusted": null
+          },
+          {
+            "observationId": "obs_a35a5bbecca4c28e89db",
+            "channel": "webhook",
+            "sourceId": "evt_7a1216bbf37450a04636",
+            "providerStatus": "completed",
+            "providerSequence": 2,
+            "finalNoEffect": false,
+            "providerOccurredAt": "2026-01-01T00:00:00.022Z",
+            "observedAt": "2026-01-01T00:00:00.027Z",
+            "decision": "settled",
+            "untrusted": null
+          }
+        ],
+        "webhookEvents": [
+          {
+            "eventId": "evt_7a1216bbf37450a04636",
+            "providerStatus": "completed",
+            "providerSequence": 2,
+            "providerOccurredAt": "2026-01-01T00:00:00.022Z",
+            "firstReceivedAt": "2026-01-01T00:00:00.025Z",
+            "processedAt": "2026-01-01T00:00:00.032Z",
+            "decision": "settled",
+            "deliveries": [
+              {
+                "deliveryId": "dlv_568d15f9ad765f6a2f73",
+                "receivedAt": "2026-01-01T00:00:00.025Z",
+                "result": "accepted"
+              }
+            ]
+          }
+        ],
+        "truncated": false
+      },
+      "answer": {
+        "verdict": "no",
+        "text": "No. 1 deliveries of 1 provider event(s) produced 1 terminal journal effect; duplicates and the stale event were recorded and ignored.",
+        "evidenceIds": [
+          "jb_88745fb4f7b4cdeaddb9",
+          "jb_dd32ce930ec331e3a9af",
+          "jb_dd32ce930ec331e3a9af"
+        ]
+      }
+    },
+    {
+      "id": "final",
+      "label": "Five deliveries, one settlement",
+      "afterSeq": 20,
+      "transfer": {
+        "transferId": "tr_6d313d6bafc141abc61b",
+        "runId": "S2-1",
+        "accountId": "S2-1-A",
+        "asset": "DEMO_USD",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "state": "settled",
+        "providerReference": "pref_44fa363f7512b009d075",
+        "version": 4,
+        "createdAt": "2026-01-01T00:00:00.002Z",
+        "updatedAt": "2026-01-01T00:00:00.027Z",
+        "lastProviderObservation": {
+          "observationId": "obs_a35a5bbecca4c28e89db",
+          "providerStatus": "completed",
+          "providerSequence": 2,
+          "observedAt": "2026-01-01T00:00:00.027Z",
+          "ageMs": 44
+        },
+        "untrusted": null
+      },
+      "balances": {
+        "accountId": "S2-1-A",
+        "observedAt": "2026-01-01T00:00:00.072Z",
+        "asset": "DEMO_USD",
+        "availableMinor": "98750",
+        "reservedMinor": "0",
+        "runClearingMinor": "1250"
+      },
+      "invariants": {
+        "transferId": "tr_6d313d6bafc141abc61b",
+        "transferState": "settled",
+        "observedAt": "2026-01-01T00:00:00.074Z",
+        "results": [
+          {
+            "id": "I1",
+            "title": "Identity: one accepted logical transfer per scoped idempotency key and payload",
+            "status": "pass",
+            "explanation": "One idempotency record maps to this transfer and its stored fingerprint matches the transfer's asset, amount and destination. 0 replayed request(s) and 0 conflicting request(s) were answered without creating another transfer.",
+            "evidenceIds": [
+              "ev_9c5c37129d4b65a9890b"
+            ]
+          },
+          {
+            "id": "I2",
+            "title": "Conservation: every journal batch balances and projections equal journal totals",
+            "status": "pass",
+            "explanation": "2 posting batch(es) each sum to zero in DEMO_USD; projected balances equal journal totals for the accounts this transfer touches.",
+            "evidenceIds": [
+              "jb_88745fb4f7b4cdeaddb9",
+              "jb_dd32ce930ec331e3a9af"
+            ]
+          },
+          {
+            "id": "I3",
+            "title": "Effects: one reservation, at most one terminal effect, settle and release mutually exclusive",
+            "status": "pass",
+            "explanation": "Journal shows 1 reservation, 1 settlement and 0 release batch(es) for this transfer.",
+            "evidenceIds": [
+              "jb_88745fb4f7b4cdeaddb9",
+              "jb_dd32ce930ec331e3a9af"
+            ]
+          },
+          {
+            "id": "I4",
+            "title": "Availability: accepted transfers cannot overdraw available or reserved funds",
+            "status": "pass",
+            "explanation": "Available and reserved balances are nonnegative in both the projection and the journal.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I5",
+            "title": "State: terminal states never regress and agree with journal postings",
+            "status": "pass",
+            "explanation": "State \"settled\" agrees with the journal (1 settlement, 0 release) and no state change follows a terminal state.",
+            "evidenceIds": [
+              "jb_dd32ce930ec331e3a9af"
+            ]
+          },
+          {
+            "id": "I6",
+            "title": "External identity: one provider reference for all attempts; at most one external effect per reference",
+            "status": "unknown",
+            "explanation": "All 1 provider call(s) (1 submission(s)) used the single provider reference pref_44fa363f7512b009d075. The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it.",
+            "evidenceIds": [
+              "att_5b2bb0b52edba908ab6b"
+            ],
+            "parts": [
+              {
+                "id": "I6.local",
+                "status": "pass",
+                "explanation": "All 1 provider call(s) (1 submission(s)) used the single provider reference pref_44fa363f7512b009d075."
+              },
+              {
+                "id": "I6.external",
+                "status": "unknown",
+                "explanation": "The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it."
+              }
+            ]
+          },
+          {
+            "id": "I7",
+            "title": "Uncertainty: timeouts never imply rejection or release; incomplete evidence stays unresolved",
+            "status": "pass",
+            "explanation": "0 inconclusive provider call(s) recorded; none led to a release.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I8",
+            "title": "Traceability: requests, attempts, observations and transitions have stable linked evidence IDs",
+            "status": "pass",
+            "explanation": "20 trace events form a gap-free sequence; every journal batch and provider call is referenced by a trace event and every causation link resolves to an earlier event.",
+            "evidenceIds": []
+          }
+        ],
+        "summary": {
+          "pass": 7,
+          "fail": 0,
+          "unknown": 1
+        },
+        "unresolvedExternalOutcome": false
+      },
+      "exceptions": [],
+      "evidence": {
+        "transferId": "tr_6d313d6bafc141abc61b",
+        "observedAt": "2026-01-01T00:00:00.077Z",
+        "journal": [
+          {
+            "batchId": "jb_88745fb4f7b4cdeaddb9",
+            "phase": "reserve",
+            "createdAt": "2026-01-01T00:00:00.004Z",
+            "postings": [
+              {
+                "postingId": "jp_a3910d2ca1a4b39e73fe",
+                "ledgerAccount": "user:S2-1-A:available",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              },
+              {
+                "postingId": "jp_1529ea006446e7613be6",
+                "ledgerAccount": "user:S2-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              }
+            ]
+          },
+          {
+            "batchId": "jb_dd32ce930ec331e3a9af",
+            "phase": "settle",
+            "createdAt": "2026-01-01T00:00:00.029Z",
+            "postings": [
+              {
+                "postingId": "jp_122f704e1c2a2b9aca36",
+                "ledgerAccount": "provider:clearing",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              },
+              {
+                "postingId": "jp_ba0729092fe2d412c09a",
+                "ledgerAccount": "user:S2-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              }
+            ]
+          }
+        ],
+        "providerAttempts": [
+          {
+            "attemptId": "att_5b2bb0b52edba908ab6b",
+            "kind": "submit",
+            "attemptNo": 1,
+            "providerReference": "pref_44fa363f7512b009d075",
+            "leaseToken": 1,
+            "startedAt": "2026-01-01T00:00:00.010Z",
+            "finishedAt": "2026-01-01T00:00:00.017Z",
+            "outcome": "pending",
+            "httpStatus": 201,
+            "detail": null
+          }
+        ],
+        "providerObservations": [
+          {
+            "observationId": "obs_a241943ee3d46d039127",
+            "channel": "submit_response",
+            "sourceId": "att_5b2bb0b52edba908ab6b",
+            "providerStatus": "pending",
+            "providerSequence": 1,
+            "finalNoEffect": false,
+            "providerOccurredAt": "2026-01-01T00:00:00.015Z",
+            "observedAt": "2026-01-01T00:00:00.018Z",
+            "decision": "provider_pending",
+            "untrusted": null
+          },
+          {
+            "observationId": "obs_a35a5bbecca4c28e89db",
+            "channel": "webhook",
+            "sourceId": "evt_7a1216bbf37450a04636",
+            "providerStatus": "completed",
+            "providerSequence": 2,
+            "finalNoEffect": false,
+            "providerOccurredAt": "2026-01-01T00:00:00.022Z",
+            "observedAt": "2026-01-01T00:00:00.027Z",
+            "decision": "settled",
+            "untrusted": null
+          },
+          {
+            "observationId": "obs_a713cbbcd8bdfe570b4e",
+            "channel": "webhook",
+            "sourceId": "evt_7b9587c98aba5381ed6d",
+            "providerStatus": "completed",
+            "providerSequence": 2,
+            "finalNoEffect": false,
+            "providerOccurredAt": "2026-01-01T00:00:00.050Z",
+            "observedAt": "2026-01-01T00:00:00.055Z",
+            "decision": "duplicate_outcome",
+            "untrusted": null
+          },
+          {
+            "observationId": "obs_fa3051a4f937dadfbc2a",
+            "channel": "webhook",
+            "sourceId": "evt_58f37ad9c7d32a326cc7",
+            "providerStatus": "pending",
+            "providerSequence": 1,
+            "finalNoEffect": false,
+            "providerOccurredAt": "2026-01-01T00:00:00.016Z",
+            "observedAt": "2026-01-01T00:00:00.065Z",
+            "decision": "stale_observation",
+            "untrusted": null
+          }
+        ],
+        "webhookEvents": [
+          {
+            "eventId": "evt_7a1216bbf37450a04636",
+            "providerStatus": "completed",
+            "providerSequence": 2,
+            "providerOccurredAt": "2026-01-01T00:00:00.022Z",
+            "firstReceivedAt": "2026-01-01T00:00:00.025Z",
+            "processedAt": "2026-01-01T00:00:00.032Z",
+            "decision": "settled",
+            "deliveries": [
+              {
+                "deliveryId": "dlv_568d15f9ad765f6a2f73",
+                "receivedAt": "2026-01-01T00:00:00.025Z",
+                "result": "accepted"
+              },
+              {
+                "deliveryId": "dlv_dfe444aadf4cc3ae0787",
+                "receivedAt": "2026-01-01T00:00:00.044Z",
+                "result": "duplicate"
+              },
+              {
+                "deliveryId": "dlv_6c64877a090c1115b59d",
+                "receivedAt": "2026-01-01T00:00:00.048Z",
+                "result": "duplicate"
+              }
+            ]
+          },
+          {
+            "eventId": "evt_7b9587c98aba5381ed6d",
+            "providerStatus": "completed",
+            "providerSequence": 2,
+            "providerOccurredAt": "2026-01-01T00:00:00.050Z",
+            "firstReceivedAt": "2026-01-01T00:00:00.053Z",
+            "processedAt": "2026-01-01T00:00:00.058Z",
+            "decision": "duplicate_outcome",
+            "deliveries": [
+              {
+                "deliveryId": "dlv_fa42763a6283b6f33be9",
+                "receivedAt": "2026-01-01T00:00:00.053Z",
+                "result": "accepted"
+              }
+            ]
+          },
+          {
+            "eventId": "evt_58f37ad9c7d32a326cc7",
+            "providerStatus": "pending",
+            "providerSequence": 1,
+            "providerOccurredAt": "2026-01-01T00:00:00.016Z",
+            "firstReceivedAt": "2026-01-01T00:00:00.063Z",
+            "processedAt": "2026-01-01T00:00:00.068Z",
+            "decision": "stale_observation",
+            "deliveries": [
+              {
+                "deliveryId": "dlv_527537d1f7bdf9611c5e",
+                "receivedAt": "2026-01-01T00:00:00.063Z",
+                "result": "accepted"
+              }
+            ]
+          }
+        ],
+        "truncated": false
+      },
+      "answer": {
+        "verdict": "no",
+        "text": "No. 5 deliveries of 3 provider event(s) produced 1 terminal journal effect; duplicates and the stale event were recorded and ignored.",
+        "evidenceIds": [
+          "jb_88745fb4f7b4cdeaddb9",
+          "jb_dd32ce930ec331e3a9af",
+          "jb_dd32ce930ec331e3a9af"
+        ]
+      }
+    }
+  ],
+  "oracle": {
+    "privileged": true,
+    "notice": "Simulator ground truth read by the test harness. The application and the investigating agent never see this; it is shown only so a reviewer can check that the application did not guess.",
+    "providerStatus": "completed",
+    "providerEffectCount": 1,
+    "providerEvents": [
+      {
+        "eventId": "evt_58f37ad9c7d32a326cc7",
+        "status": "pending",
+        "sequence": 1,
+        "forced": false,
+        "deliveryCount": 1
+      },
+      {
+        "eventId": "evt_7a1216bbf37450a04636",
+        "status": "completed",
+        "sequence": 2,
+        "forced": false,
+        "deliveryCount": 3
+      },
+      {
+        "eventId": "evt_7b9587c98aba5381ed6d",
+        "status": "completed",
+        "sequence": 2,
+        "forced": true,
+        "deliveryCount": 1
+      }
+    ]
+  },
+  "agentDiagnosis": null
+}

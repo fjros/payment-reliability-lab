@@ -1,0 +1,1006 @@
+{
+  "format": "payment-reliability-lab/replay",
+  "version": 1,
+  "scenario": {
+    "id": "S3",
+    "title": "Provider accepted, response disappeared",
+    "question": "Do we know whether this payment completed?",
+    "summary": "The provider durably accepts the transfer but its response never arrives, and lookup is temporarily unavailable."
+  },
+  "seed": "1",
+  "runId": "S3-1",
+  "accountId": "S3-1-A",
+  "transferId": "tr_d7b48831d3ef89f23198",
+  "generatedAt": "2026-09-17T07:43:27.723Z",
+  "scenarioClock": "Deterministic manual clock starting 2026-01-01T00:00:00.000Z; timestamps order events but are not wall-clock measurements.",
+  "implementationRevision": "unavailable",
+  "provenance": {
+    "kind": "recorded-deterministic-scenario-run",
+    "synthetic": true,
+    "generator": "npm run demo:export -- S3",
+    "note": "Recorded from a real local run (real PostgreSQL, real HTTP between API, worker and provider simulator). All accounts, funds and providers are synthetic. This is a static replay, not live MCP or agent execution."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "actor": "client",
+      "text": "POST /v1/transfers with Idempotency-Key \"K-s3\" is accepted (202): tr_d7b48831d3ef89f23198.",
+      "afterSeq": 3
+    },
+    {
+      "n": 2,
+      "actor": "worker",
+      "text": "The worker submits. The provider commits its acceptance, then the connection dies before any response arrives.",
+      "afterSeq": 9
+    },
+    {
+      "n": 3,
+      "actor": "worker",
+      "text": "A restarted worker tries a lookup with the SAME provider reference. Lookup is unavailable (503): still unknown, nothing released.",
+      "afterSeq": 12
+    },
+    {
+      "n": 4,
+      "actor": "worker",
+      "text": "Lookup becomes available and authoritatively reports \"completed\". The reservation settles exactly once.",
+      "afterSeq": 17
+    }
+  ],
+  "trace": [
+    {
+      "eventId": "ev_848db73d0fd72a264975",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 1,
+      "type": "request_accepted",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.003Z",
+      "correlationId": "req_413d698f6b2bf3919856",
+      "causationId": null,
+      "facts": {
+        "asset": "DEMO_USD",
+        "requestId": "req_413d698f6b2bf3919856",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "fingerprint": "4109b729868f82bc7a56695c2d60d22c2b5bdc5e3a76e2dc72ef1b0ecf890f89",
+        "idempotencyKey": "K-s3"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_3ad06d08ef5351352d1d",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 2,
+      "type": "funds_reserved",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.005Z",
+      "correlationId": "req_413d698f6b2bf3919856",
+      "causationId": "ev_848db73d0fd72a264975",
+      "facts": {
+        "asset": "DEMO_USD",
+        "phase": "reserve",
+        "batchId": "jb_8006951b9684cc9f5dff",
+        "postingIds": [
+          "jp_057ddc5571ce234d7be7",
+          "jp_474506a96fa14f5c7867"
+        ],
+        "amountMinor": "1250"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_ad5fb645e5029f203df0",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 3,
+      "type": "job_scheduled",
+      "source": "api",
+      "recordedAt": "2026-01-01T00:00:00.006Z",
+      "correlationId": "req_413d698f6b2bf3919856",
+      "causationId": "ev_848db73d0fd72a264975",
+      "facts": {
+        "jobId": "job_1afffa145813e52b3932"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_b450b5c05aafbee51884",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 4,
+      "type": "job_claimed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.011Z",
+      "correlationId": "job_1afffa145813e52b3932#1",
+      "causationId": null,
+      "facts": {
+        "jobId": "job_1afffa145813e52b3932",
+        "workerId": "worker-1",
+        "leaseToken": 1,
+        "stateWhenClaimed": "reserved"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_f45fcb5e206d11c6f6dc",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 5,
+      "type": "state_changed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.013Z",
+      "correlationId": "job_1afffa145813e52b3932#1",
+      "causationId": "ev_b450b5c05aafbee51884",
+      "facts": {
+        "to": "submitting",
+        "from": "reserved",
+        "journalBatchId": null
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_73285b2f5859a32f6644",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 6,
+      "type": "submission_attempted",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.014Z",
+      "correlationId": "job_1afffa145813e52b3932#1",
+      "causationId": "ev_b450b5c05aafbee51884",
+      "facts": {
+        "attemptId": "att_80e169d53923760d3966",
+        "attemptNo": 1,
+        "resubmission": false,
+        "providerReference": "pref_f8b39489b392672ba52a"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_4dead397b05a5526b735",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 7,
+      "type": "response_lost",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.021Z",
+      "correlationId": "job_1afffa145813e52b3932#1",
+      "causationId": "ev_b450b5c05aafbee51884",
+      "facts": {
+        "call": "submit",
+        "detail": "fetch failed: other side closed",
+        "meaning": "The provider may or may not have processed the request.",
+        "outcome": "response_lost",
+        "attemptId": "att_80e169d53923760d3966",
+        "httpStatus": null
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_3ed61940c405d98dd920",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 8,
+      "type": "outcome_unknown",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.022Z",
+      "correlationId": "job_1afffa145813e52b3932#1",
+      "causationId": "ev_b450b5c05aafbee51884",
+      "facts": {
+        "reason": "submit_response_lost",
+        "release": "not permitted without a final no-effect rejection",
+        "reservation": "kept",
+        "providerReference": "pref_f8b39489b392672ba52a"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_e3b3854e3dbfebdf8381",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 9,
+      "type": "state_changed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:00.024Z",
+      "correlationId": "job_1afffa145813e52b3932#1",
+      "causationId": "ev_3ed61940c405d98dd920",
+      "facts": {
+        "to": "outcome_unknown",
+        "from": "submitting",
+        "journalBatchId": null
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_99c1e1e5ad2cc93ff94c",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 10,
+      "type": "job_claimed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:02.534Z",
+      "correlationId": "job_1afffa145813e52b3932#2",
+      "causationId": null,
+      "facts": {
+        "jobId": "job_1afffa145813e52b3932",
+        "workerId": "worker-2",
+        "leaseToken": 2,
+        "stateWhenClaimed": "outcome_unknown"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_502446840a382cb7c04c",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 11,
+      "type": "lookup_attempted",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:02.535Z",
+      "correlationId": "job_1afffa145813e52b3932#2",
+      "causationId": "ev_99c1e1e5ad2cc93ff94c",
+      "facts": {
+        "attemptId": "att_760bc9f7ff43c51df877",
+        "attemptNo": 2,
+        "resubmission": false,
+        "providerReference": "pref_f8b39489b392672ba52a"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_37f0b4a009633014670d",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 12,
+      "type": "provider_call_failed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:02.537Z",
+      "correlationId": "job_1afffa145813e52b3932#2",
+      "causationId": "ev_99c1e1e5ad2cc93ff94c",
+      "facts": {
+        "call": "lookup",
+        "detail": null,
+        "meaning": "No usable provider evidence was obtained.",
+        "outcome": "http_error",
+        "attemptId": "att_760bc9f7ff43c51df877",
+        "httpStatus": 503
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_bba27269cf10d6815bba",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 13,
+      "type": "job_claimed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:05.048Z",
+      "correlationId": "job_1afffa145813e52b3932#3",
+      "causationId": null,
+      "facts": {
+        "jobId": "job_1afffa145813e52b3932",
+        "workerId": "worker-3",
+        "leaseToken": 3,
+        "stateWhenClaimed": "outcome_unknown"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_4aa82a89224265d4d406",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 14,
+      "type": "lookup_attempted",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:05.049Z",
+      "correlationId": "job_1afffa145813e52b3932#3",
+      "causationId": "ev_bba27269cf10d6815bba",
+      "facts": {
+        "attemptId": "att_bdc7a326090b2d5ffe7d",
+        "attemptNo": 3,
+        "resubmission": false,
+        "providerReference": "pref_f8b39489b392672ba52a"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_321d91845b53659b484a",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 15,
+      "type": "provider_observation_received",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:05.052Z",
+      "correlationId": "job_1afffa145813e52b3932#3",
+      "causationId": "ev_bba27269cf10d6815bba",
+      "facts": {
+        "channel": "lookup",
+        "decision": "settled",
+        "sourceId": "att_bdc7a326090b2d5ffe7d",
+        "finalNoEffect": false,
+        "observationId": "obs_a3a06bec80a26757718b",
+        "providerStatus": "completed",
+        "providerSequence": 2,
+        "stateWhenObserved": "outcome_unknown",
+        "providerOccurredAt": "2026-01-01T00:00:00.017Z"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_bb6172b99181dee9cde6",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 16,
+      "type": "funds_settled",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:05.054Z",
+      "correlationId": "job_1afffa145813e52b3932#3",
+      "causationId": "ev_321d91845b53659b484a",
+      "facts": {
+        "asset": "DEMO_USD",
+        "phase": "settle",
+        "batchId": "jb_3e2b684aa711fbbce7fa",
+        "postingIds": [
+          "jp_fd0fa084b5ab4c26977e",
+          "jp_33e72cfe0e2d55df8342"
+        ],
+        "amountMinor": "1250"
+      },
+      "untrusted": null
+    },
+    {
+      "eventId": "ev_a968df25974b35e6cfe4",
+      "transferId": "tr_d7b48831d3ef89f23198",
+      "seq": 17,
+      "type": "state_changed",
+      "source": "worker",
+      "recordedAt": "2026-01-01T00:00:05.055Z",
+      "correlationId": "job_1afffa145813e52b3932#3",
+      "causationId": "ev_321d91845b53659b484a",
+      "facts": {
+        "to": "settled",
+        "from": "outcome_unknown",
+        "journalBatchId": "jb_3e2b684aa711fbbce7fa"
+      },
+      "untrusted": null
+    }
+  ],
+  "moments": [
+    {
+      "id": "unknown",
+      "label": "Outcome unknown; funds reserved",
+      "afterSeq": 9,
+      "transfer": {
+        "transferId": "tr_d7b48831d3ef89f23198",
+        "runId": "S3-1",
+        "accountId": "S3-1-A",
+        "asset": "DEMO_USD",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "state": "outcome_unknown",
+        "providerReference": "pref_f8b39489b392672ba52a",
+        "version": 3,
+        "createdAt": "2026-01-01T00:00:00.002Z",
+        "updatedAt": "2026-01-01T00:00:00.023Z",
+        "lastProviderObservation": null,
+        "untrusted": null
+      },
+      "balances": {
+        "accountId": "S3-1-A",
+        "observedAt": "2026-01-01T00:00:00.026Z",
+        "asset": "DEMO_USD",
+        "availableMinor": "98750",
+        "reservedMinor": "1250",
+        "runClearingMinor": "0"
+      },
+      "invariants": {
+        "transferId": "tr_d7b48831d3ef89f23198",
+        "transferState": "outcome_unknown",
+        "observedAt": "2026-01-01T00:00:00.028Z",
+        "results": [
+          {
+            "id": "I1",
+            "title": "Identity: one accepted logical transfer per scoped idempotency key and payload",
+            "status": "pass",
+            "explanation": "One idempotency record maps to this transfer and its stored fingerprint matches the transfer's asset, amount and destination. 0 replayed request(s) and 0 conflicting request(s) were answered without creating another transfer.",
+            "evidenceIds": [
+              "ev_848db73d0fd72a264975"
+            ]
+          },
+          {
+            "id": "I2",
+            "title": "Conservation: every journal batch balances and projections equal journal totals",
+            "status": "pass",
+            "explanation": "1 posting batch(es) each sum to zero in DEMO_USD; projected balances equal journal totals for the accounts this transfer touches.",
+            "evidenceIds": [
+              "jb_8006951b9684cc9f5dff"
+            ]
+          },
+          {
+            "id": "I3",
+            "title": "Effects: one reservation, at most one terminal effect, settle and release mutually exclusive",
+            "status": "pass",
+            "explanation": "Journal shows 1 reservation, 0 settlement and 0 release batch(es) for this transfer.",
+            "evidenceIds": [
+              "jb_8006951b9684cc9f5dff"
+            ]
+          },
+          {
+            "id": "I4",
+            "title": "Availability: accepted transfers cannot overdraw available or reserved funds",
+            "status": "pass",
+            "explanation": "Available and reserved balances are nonnegative in both the projection and the journal.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I5",
+            "title": "State: terminal states never regress and agree with journal postings",
+            "status": "pass",
+            "explanation": "State \"outcome_unknown\" agrees with the journal (0 settlement, 0 release) and no state change follows a terminal state.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I6",
+            "title": "External identity: one provider reference for all attempts; at most one external effect per reference",
+            "status": "unknown",
+            "explanation": "All 1 provider call(s) (1 submission(s)) used the single provider reference pref_f8b39489b392672ba52a. The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it.",
+            "evidenceIds": [
+              "att_80e169d53923760d3966"
+            ],
+            "parts": [
+              {
+                "id": "I6.local",
+                "status": "pass",
+                "explanation": "All 1 provider call(s) (1 submission(s)) used the single provider reference pref_f8b39489b392672ba52a."
+              },
+              {
+                "id": "I6.external",
+                "status": "unknown",
+                "explanation": "The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it."
+              }
+            ]
+          },
+          {
+            "id": "I7",
+            "title": "Uncertainty: timeouts never imply rejection or release; incomplete evidence stays unresolved",
+            "status": "pass",
+            "explanation": "1 inconclusive provider call(s) recorded. The outcome is explicitly UNKNOWN: funds remain reserved and nothing was released. This is a valid unresolved state, not a failure.",
+            "evidenceIds": [
+              "att_80e169d53923760d3966",
+              "ev_3ed61940c405d98dd920"
+            ]
+          },
+          {
+            "id": "I8",
+            "title": "Traceability: requests, attempts, observations and transitions have stable linked evidence IDs",
+            "status": "pass",
+            "explanation": "9 trace events form a gap-free sequence; every journal batch and provider call is referenced by a trace event and every causation link resolves to an earlier event.",
+            "evidenceIds": []
+          }
+        ],
+        "summary": {
+          "pass": 7,
+          "fail": 0,
+          "unknown": 1
+        },
+        "unresolvedExternalOutcome": true
+      },
+      "exceptions": [
+        {
+          "itemId": "unknown_outcome:tr_d7b48831d3ef89f23198",
+          "kind": "unknown_outcome",
+          "reason": "provider_outcome_unresolved",
+          "transferId": "tr_d7b48831d3ef89f23198",
+          "detail": "Submission began but no authoritative provider evidence has been recorded. Funds stay reserved.",
+          "evidenceIds": [
+            "ev_3ed61940c405d98dd920"
+          ],
+          "since": "2026-01-01T00:00:00.023Z",
+          "ageMs": 6
+        }
+      ],
+      "evidence": {
+        "transferId": "tr_d7b48831d3ef89f23198",
+        "observedAt": "2026-01-01T00:00:00.031Z",
+        "journal": [
+          {
+            "batchId": "jb_8006951b9684cc9f5dff",
+            "phase": "reserve",
+            "createdAt": "2026-01-01T00:00:00.004Z",
+            "postings": [
+              {
+                "postingId": "jp_057ddc5571ce234d7be7",
+                "ledgerAccount": "user:S3-1-A:available",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              },
+              {
+                "postingId": "jp_474506a96fa14f5c7867",
+                "ledgerAccount": "user:S3-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              }
+            ]
+          }
+        ],
+        "providerAttempts": [
+          {
+            "attemptId": "att_80e169d53923760d3966",
+            "kind": "submit",
+            "attemptNo": 1,
+            "providerReference": "pref_f8b39489b392672ba52a",
+            "leaseToken": 1,
+            "startedAt": "2026-01-01T00:00:00.010Z",
+            "finishedAt": "2026-01-01T00:00:00.020Z",
+            "outcome": "response_lost",
+            "httpStatus": null,
+            "detail": "fetch failed: other side closed"
+          }
+        ],
+        "providerObservations": [],
+        "webhookEvents": [],
+        "truncated": false
+      },
+      "answer": {
+        "verdict": "not_yet_known",
+        "text": "Not yet. The submission left, no answer came back, and no authoritative observation exists. Funds stay reserved; nothing was released or re-sent under a new reference.",
+        "evidenceIds": [
+          "ev_4dead397b05a5526b735",
+          "ev_3ed61940c405d98dd920",
+          "att_80e169d53923760d3966",
+          "ev_3ed61940c405d98dd920"
+        ]
+      }
+    },
+    {
+      "id": "still-unknown",
+      "label": "Restarted; lookup unavailable; still unknown",
+      "afterSeq": 12,
+      "transfer": {
+        "transferId": "tr_d7b48831d3ef89f23198",
+        "runId": "S3-1",
+        "accountId": "S3-1-A",
+        "asset": "DEMO_USD",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "state": "outcome_unknown",
+        "providerReference": "pref_f8b39489b392672ba52a",
+        "version": 3,
+        "createdAt": "2026-01-01T00:00:00.002Z",
+        "updatedAt": "2026-01-01T00:00:00.023Z",
+        "lastProviderObservation": null,
+        "untrusted": null
+      },
+      "balances": {
+        "accountId": "S3-1-A",
+        "observedAt": "2026-01-01T00:00:02.539Z",
+        "asset": "DEMO_USD",
+        "availableMinor": "98750",
+        "reservedMinor": "1250",
+        "runClearingMinor": "0"
+      },
+      "invariants": {
+        "transferId": "tr_d7b48831d3ef89f23198",
+        "transferState": "outcome_unknown",
+        "observedAt": "2026-01-01T00:00:02.541Z",
+        "results": [
+          {
+            "id": "I1",
+            "title": "Identity: one accepted logical transfer per scoped idempotency key and payload",
+            "status": "pass",
+            "explanation": "One idempotency record maps to this transfer and its stored fingerprint matches the transfer's asset, amount and destination. 0 replayed request(s) and 0 conflicting request(s) were answered without creating another transfer.",
+            "evidenceIds": [
+              "ev_848db73d0fd72a264975"
+            ]
+          },
+          {
+            "id": "I2",
+            "title": "Conservation: every journal batch balances and projections equal journal totals",
+            "status": "pass",
+            "explanation": "1 posting batch(es) each sum to zero in DEMO_USD; projected balances equal journal totals for the accounts this transfer touches.",
+            "evidenceIds": [
+              "jb_8006951b9684cc9f5dff"
+            ]
+          },
+          {
+            "id": "I3",
+            "title": "Effects: one reservation, at most one terminal effect, settle and release mutually exclusive",
+            "status": "pass",
+            "explanation": "Journal shows 1 reservation, 0 settlement and 0 release batch(es) for this transfer.",
+            "evidenceIds": [
+              "jb_8006951b9684cc9f5dff"
+            ]
+          },
+          {
+            "id": "I4",
+            "title": "Availability: accepted transfers cannot overdraw available or reserved funds",
+            "status": "pass",
+            "explanation": "Available and reserved balances are nonnegative in both the projection and the journal.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I5",
+            "title": "State: terminal states never regress and agree with journal postings",
+            "status": "pass",
+            "explanation": "State \"outcome_unknown\" agrees with the journal (0 settlement, 0 release) and no state change follows a terminal state.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I6",
+            "title": "External identity: one provider reference for all attempts; at most one external effect per reference",
+            "status": "unknown",
+            "explanation": "All 2 provider call(s) (1 submission(s)) used the single provider reference pref_f8b39489b392672ba52a. The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it.",
+            "evidenceIds": [
+              "att_80e169d53923760d3966",
+              "att_760bc9f7ff43c51df877"
+            ],
+            "parts": [
+              {
+                "id": "I6.local",
+                "status": "pass",
+                "explanation": "All 2 provider call(s) (1 submission(s)) used the single provider reference pref_f8b39489b392672ba52a."
+              },
+              {
+                "id": "I6.external",
+                "status": "unknown",
+                "explanation": "The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it."
+              }
+            ]
+          },
+          {
+            "id": "I7",
+            "title": "Uncertainty: timeouts never imply rejection or release; incomplete evidence stays unresolved",
+            "status": "pass",
+            "explanation": "2 inconclusive provider call(s) recorded. The outcome is explicitly UNKNOWN: funds remain reserved and nothing was released. This is a valid unresolved state, not a failure.",
+            "evidenceIds": [
+              "att_80e169d53923760d3966",
+              "att_760bc9f7ff43c51df877",
+              "ev_3ed61940c405d98dd920"
+            ]
+          },
+          {
+            "id": "I8",
+            "title": "Traceability: requests, attempts, observations and transitions have stable linked evidence IDs",
+            "status": "pass",
+            "explanation": "12 trace events form a gap-free sequence; every journal batch and provider call is referenced by a trace event and every causation link resolves to an earlier event.",
+            "evidenceIds": []
+          }
+        ],
+        "summary": {
+          "pass": 7,
+          "fail": 0,
+          "unknown": 1
+        },
+        "unresolvedExternalOutcome": true
+      },
+      "exceptions": [
+        {
+          "itemId": "unknown_outcome:tr_d7b48831d3ef89f23198",
+          "kind": "unknown_outcome",
+          "reason": "provider_outcome_unresolved",
+          "transferId": "tr_d7b48831d3ef89f23198",
+          "detail": "Submission began but no authoritative provider evidence has been recorded. Funds stay reserved.",
+          "evidenceIds": [
+            "ev_3ed61940c405d98dd920"
+          ],
+          "since": "2026-01-01T00:00:00.023Z",
+          "ageMs": 2519
+        }
+      ],
+      "evidence": {
+        "transferId": "tr_d7b48831d3ef89f23198",
+        "observedAt": "2026-01-01T00:00:02.544Z",
+        "journal": [
+          {
+            "batchId": "jb_8006951b9684cc9f5dff",
+            "phase": "reserve",
+            "createdAt": "2026-01-01T00:00:00.004Z",
+            "postings": [
+              {
+                "postingId": "jp_057ddc5571ce234d7be7",
+                "ledgerAccount": "user:S3-1-A:available",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              },
+              {
+                "postingId": "jp_474506a96fa14f5c7867",
+                "ledgerAccount": "user:S3-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              }
+            ]
+          }
+        ],
+        "providerAttempts": [
+          {
+            "attemptId": "att_80e169d53923760d3966",
+            "kind": "submit",
+            "attemptNo": 1,
+            "providerReference": "pref_f8b39489b392672ba52a",
+            "leaseToken": 1,
+            "startedAt": "2026-01-01T00:00:00.010Z",
+            "finishedAt": "2026-01-01T00:00:00.020Z",
+            "outcome": "response_lost",
+            "httpStatus": null,
+            "detail": "fetch failed: other side closed"
+          },
+          {
+            "attemptId": "att_760bc9f7ff43c51df877",
+            "kind": "lookup",
+            "attemptNo": 2,
+            "providerReference": "pref_f8b39489b392672ba52a",
+            "leaseToken": 2,
+            "startedAt": "2026-01-01T00:00:02.533Z",
+            "finishedAt": "2026-01-01T00:00:02.536Z",
+            "outcome": "http_error",
+            "httpStatus": 503,
+            "detail": null
+          }
+        ],
+        "providerObservations": [],
+        "webhookEvents": [],
+        "truncated": false
+      },
+      "answer": {
+        "verdict": "not_yet_known",
+        "text": "Not yet. The submission left, no answer came back, and no authoritative observation exists. Funds stay reserved; nothing was released or re-sent under a new reference.",
+        "evidenceIds": [
+          "ev_4dead397b05a5526b735",
+          "ev_3ed61940c405d98dd920",
+          "att_80e169d53923760d3966",
+          "att_760bc9f7ff43c51df877",
+          "ev_3ed61940c405d98dd920"
+        ]
+      }
+    },
+    {
+      "id": "final",
+      "label": "Authoritative observation; settled once",
+      "afterSeq": 17,
+      "transfer": {
+        "transferId": "tr_d7b48831d3ef89f23198",
+        "runId": "S3-1",
+        "accountId": "S3-1-A",
+        "asset": "DEMO_USD",
+        "amountMinor": "1250",
+        "destination": "demo:merchant-1",
+        "state": "settled",
+        "providerReference": "pref_f8b39489b392672ba52a",
+        "version": 4,
+        "createdAt": "2026-01-01T00:00:00.002Z",
+        "updatedAt": "2026-01-01T00:00:05.051Z",
+        "lastProviderObservation": {
+          "observationId": "obs_a3a06bec80a26757718b",
+          "providerStatus": "completed",
+          "providerSequence": 2,
+          "observedAt": "2026-01-01T00:00:05.051Z",
+          "ageMs": 5
+        },
+        "untrusted": null
+      },
+      "balances": {
+        "accountId": "S3-1-A",
+        "observedAt": "2026-01-01T00:00:05.057Z",
+        "asset": "DEMO_USD",
+        "availableMinor": "98750",
+        "reservedMinor": "0",
+        "runClearingMinor": "1250"
+      },
+      "invariants": {
+        "transferId": "tr_d7b48831d3ef89f23198",
+        "transferState": "settled",
+        "observedAt": "2026-01-01T00:00:05.059Z",
+        "results": [
+          {
+            "id": "I1",
+            "title": "Identity: one accepted logical transfer per scoped idempotency key and payload",
+            "status": "pass",
+            "explanation": "One idempotency record maps to this transfer and its stored fingerprint matches the transfer's asset, amount and destination. 0 replayed request(s) and 0 conflicting request(s) were answered without creating another transfer.",
+            "evidenceIds": [
+              "ev_848db73d0fd72a264975"
+            ]
+          },
+          {
+            "id": "I2",
+            "title": "Conservation: every journal batch balances and projections equal journal totals",
+            "status": "pass",
+            "explanation": "2 posting batch(es) each sum to zero in DEMO_USD; projected balances equal journal totals for the accounts this transfer touches.",
+            "evidenceIds": [
+              "jb_3e2b684aa711fbbce7fa",
+              "jb_8006951b9684cc9f5dff"
+            ]
+          },
+          {
+            "id": "I3",
+            "title": "Effects: one reservation, at most one terminal effect, settle and release mutually exclusive",
+            "status": "pass",
+            "explanation": "Journal shows 1 reservation, 1 settlement and 0 release batch(es) for this transfer.",
+            "evidenceIds": [
+              "jb_3e2b684aa711fbbce7fa",
+              "jb_8006951b9684cc9f5dff"
+            ]
+          },
+          {
+            "id": "I4",
+            "title": "Availability: accepted transfers cannot overdraw available or reserved funds",
+            "status": "pass",
+            "explanation": "Available and reserved balances are nonnegative in both the projection and the journal.",
+            "evidenceIds": []
+          },
+          {
+            "id": "I5",
+            "title": "State: terminal states never regress and agree with journal postings",
+            "status": "pass",
+            "explanation": "State \"settled\" agrees with the journal (1 settlement, 0 release) and no state change follows a terminal state.",
+            "evidenceIds": [
+              "jb_3e2b684aa711fbbce7fa"
+            ]
+          },
+          {
+            "id": "I6",
+            "title": "External identity: one provider reference for all attempts; at most one external effect per reference",
+            "status": "unknown",
+            "explanation": "All 3 provider call(s) (1 submission(s)) used the single provider reference pref_f8b39489b392672ba52a. The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it.",
+            "evidenceIds": [
+              "att_80e169d53923760d3966",
+              "att_760bc9f7ff43c51df877",
+              "att_bdc7a326090b2d5ffe7d"
+            ],
+            "parts": [
+              {
+                "id": "I6.local",
+                "status": "pass",
+                "explanation": "All 3 provider call(s) (1 submission(s)) used the single provider reference pref_f8b39489b392672ba52a."
+              },
+              {
+                "id": "I6.external",
+                "status": "unknown",
+                "explanation": "The application cannot count effects inside the provider. At-most-one effect per reference relies on the provider's idempotency contract; only the simulator test oracle can prove it."
+              }
+            ]
+          },
+          {
+            "id": "I7",
+            "title": "Uncertainty: timeouts never imply rejection or release; incomplete evidence stays unresolved",
+            "status": "pass",
+            "explanation": "2 inconclusive provider call(s) recorded; none led to a release.",
+            "evidenceIds": [
+              "att_80e169d53923760d3966",
+              "att_760bc9f7ff43c51df877",
+              "ev_3ed61940c405d98dd920"
+            ]
+          },
+          {
+            "id": "I8",
+            "title": "Traceability: requests, attempts, observations and transitions have stable linked evidence IDs",
+            "status": "pass",
+            "explanation": "17 trace events form a gap-free sequence; every journal batch and provider call is referenced by a trace event and every causation link resolves to an earlier event.",
+            "evidenceIds": []
+          }
+        ],
+        "summary": {
+          "pass": 7,
+          "fail": 0,
+          "unknown": 1
+        },
+        "unresolvedExternalOutcome": false
+      },
+      "exceptions": [],
+      "evidence": {
+        "transferId": "tr_d7b48831d3ef89f23198",
+        "observedAt": "2026-01-01T00:00:05.062Z",
+        "journal": [
+          {
+            "batchId": "jb_8006951b9684cc9f5dff",
+            "phase": "reserve",
+            "createdAt": "2026-01-01T00:00:00.004Z",
+            "postings": [
+              {
+                "postingId": "jp_057ddc5571ce234d7be7",
+                "ledgerAccount": "user:S3-1-A:available",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              },
+              {
+                "postingId": "jp_474506a96fa14f5c7867",
+                "ledgerAccount": "user:S3-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              }
+            ]
+          },
+          {
+            "batchId": "jb_3e2b684aa711fbbce7fa",
+            "phase": "settle",
+            "createdAt": "2026-01-01T00:00:05.053Z",
+            "postings": [
+              {
+                "postingId": "jp_fd0fa084b5ab4c26977e",
+                "ledgerAccount": "provider:clearing",
+                "asset": "DEMO_USD",
+                "amountMinor": "1250"
+              },
+              {
+                "postingId": "jp_33e72cfe0e2d55df8342",
+                "ledgerAccount": "user:S3-1-A:reserved",
+                "asset": "DEMO_USD",
+                "amountMinor": "-1250"
+              }
+            ]
+          }
+        ],
+        "providerAttempts": [
+          {
+            "attemptId": "att_80e169d53923760d3966",
+            "kind": "submit",
+            "attemptNo": 1,
+            "providerReference": "pref_f8b39489b392672ba52a",
+            "leaseToken": 1,
+            "startedAt": "2026-01-01T00:00:00.010Z",
+            "finishedAt": "2026-01-01T00:00:00.020Z",
+            "outcome": "response_lost",
+            "httpStatus": null,
+            "detail": "fetch failed: other side closed"
+          },
+          {
+            "attemptId": "att_760bc9f7ff43c51df877",
+            "kind": "lookup",
+            "attemptNo": 2,
+            "providerReference": "pref_f8b39489b392672ba52a",
+            "leaseToken": 2,
+            "startedAt": "2026-01-01T00:00:02.533Z",
+            "finishedAt": "2026-01-01T00:00:02.536Z",
+            "outcome": "http_error",
+            "httpStatus": 503,
+            "detail": null
+          },
+          {
+            "attemptId": "att_bdc7a326090b2d5ffe7d",
+            "kind": "lookup",
+            "attemptNo": 3,
+            "providerReference": "pref_f8b39489b392672ba52a",
+            "leaseToken": 3,
+            "startedAt": "2026-01-01T00:00:05.047Z",
+            "finishedAt": "2026-01-01T00:00:05.050Z",
+            "outcome": "completed",
+            "httpStatus": 200,
+            "detail": null
+          }
+        ],
+        "providerObservations": [
+          {
+            "observationId": "obs_a3a06bec80a26757718b",
+            "channel": "lookup",
+            "sourceId": "att_bdc7a326090b2d5ffe7d",
+            "providerStatus": "completed",
+            "providerSequence": 2,
+            "finalNoEffect": false,
+            "providerOccurredAt": "2026-01-01T00:00:00.017Z",
+            "observedAt": "2026-01-01T00:00:05.051Z",
+            "decision": "settled",
+            "untrusted": null
+          }
+        ],
+        "webhookEvents": [],
+        "truncated": false
+      },
+      "answer": {
+        "verdict": "yes",
+        "text": "Yes, now we do. An authoritative provider observation reported \"completed\" and the reservation was settled exactly once.",
+        "evidenceIds": [
+          "obs_a3a06bec80a26757718b",
+          "jb_3e2b684aa711fbbce7fa",
+          "jb_8006951b9684cc9f5dff"
+        ]
+      }
+    }
+  ],
+  "oracle": {
+    "privileged": true,
+    "notice": "Simulator ground truth read by the test harness. The application and the investigating agent never see this; it is shown only so a reviewer can check that the application did not guess.",
+    "providerStatus": "completed",
+    "providerEffectCount": 1,
+    "providerEvents": [
+      {
+        "eventId": "evt_18478fdeca9d7873dc85",
+        "status": "pending",
+        "sequence": 1,
+        "forced": false,
+        "deliveryCount": 0
+      },
+      {
+        "eventId": "evt_72c06b4457fabdbc22bd",
+        "status": "completed",
+        "sequence": 2,
+        "forced": false,
+        "deliveryCount": 0
+      }
+    ]
+  },
+  "agentDiagnosis": null
+}
