@@ -11,9 +11,9 @@
   "runId": "S3-1",
   "accountId": "S3-1-A",
   "transferId": "tr_d7b48831d3ef89f23198",
-  "generatedAt": "2026-09-17T07:43:27.723Z",
+  "generatedAt": "2026-09-17T09:31:31.396Z",
   "scenarioClock": "Deterministic manual clock starting 2026-01-01T00:00:00.000Z; timestamps order events but are not wall-clock measurements.",
-  "implementationRevision": "unavailable",
+  "implementationRevision": "db4d00cf64370c9c039d5ba5592365fb1bd61c0b",
   "provenance": {
     "kind": "recorded-deterministic-scenario-run",
     "synthetic": true,
